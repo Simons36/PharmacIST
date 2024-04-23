@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.PharmacIST" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <!-- Darker variant of the primary color (status bar, contextual app bars) -->
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <!-- Color for floating action buttons, etc -->
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:colorButtonNormal">@color/colorSecondary</item> <!-- For buttons -->
+        <item name="android:textColorSecondary">@color/colorSecondary</item> <!-- For secondary text color -->
+
+        <item name="colorControlNormal">@color/black</item>
+        <item name="colorControlActivated">@color/colorHighlightedSelectionArrows</item>
+        <item name="colorControlHighlight">@color/colorHighlightedSelectionArrows</item>
+    </style>
+
+    <style name="Theme.PharmacIST" parent="Base.Theme.PharmacIST" />
+</resources>

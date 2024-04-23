@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#4CAF50</color> <!-- Your primary color (e.g., default purple) -->
+    <color name="colorPrimaryDark">#388E3C</color> <!-- Your primary dark color (e.g., darker shade of purple) -->
+    <color name="colorAccent">#FF4081</color> <!-- Your accent color (e.g., default pink) -->
+
+    <!-- Define your new secondary color (green) -->
+    <color name="colorSecondary">@color/white</color> <!-- Green color -->
+
+    <!-- Color for highlighted selection arrows -->
+    <color name="colorHighlightedSelectionArrows">#0099ff</color>
+</resources>

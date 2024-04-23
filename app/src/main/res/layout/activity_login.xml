@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".LoginActivity">
+
+    <!-- Decorative half circle view -->
+
+    <!-- Logo/Image (optional) -->
+
+    <View
+        android:id="@+id/viewHalfCircle"
+        android:layout_width="600dp"
+        android:layout_height="197dp"
+        android:background="@drawable/half_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+
+    <ImageView
+        android:id="@+id/imageViewLogo"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="8dp"
+        android:src="@drawable/plus_add_addition_plus_sign"
+        app:layout_constraintBottom_toTopOf="@id/editTextUsername"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewImageDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PharmacIST"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@id/imageViewLogo"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/imageViewLogo"
+        app:layout_constraintTop_toBottomOf="@id/imageViewLogo" />
+
+    <!-- Username/Email EditText -->
+
+    <!-- Password EditText -->
+
+    <EditText
+        android:id="@+id/editTextUsername"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="32dp"
+        android:hint="Username or Email"
+        android:inputType="textEmailAddress"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageViewLogo" />
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="44dp"
+        android:hint="Password"
+        android:inputType="textPassword"
+        app:layout_constraintEnd_toEndOf="@id/editTextUsername"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/editTextUsername"
+        app:layout_constraintTop_toBottomOf="@id/editTextUsername" />
+
+    <Button
+        android:id="@+id/buttonLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Login"
+        app:layout_constraintEnd_toEndOf="@id/editTextPassword"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/editTextPassword"
+        app:layout_constraintTop_toBottomOf="@id/editTextPassword" />
+
+    <TextView
+        android:id="@+id/textViewRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Don't have an account? Register"
+        app:layout_constraintEnd_toEndOf="@id/buttonLogin"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="@id/buttonLogin"
+        app:layout_constraintTop_toBottomOf="@id/buttonLogin" />
+
+    <TextView
+        android:id="@+id/textViewForgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Forgot your password?"
+        app:layout_constraintEnd_toEndOf="@id/textViewRegister"
+        app:layout_constraintHorizontal_bias="0.49"
+        app:layout_constraintStart_toStartOf="@id/textViewRegister"
+        app:layout_constraintTop_toBottomOf="@id/textViewRegister" />
+
+    <!-- Login Button -->
+
+    <!-- Optional: Register or Forgot Password -->
+
+</androidx.constraintlayout.widget.ConstraintLayout>
