@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type UserDocument = HydratedDocument<User>;
 
+export type UserDocument = User & Document;
+
+@Schema()
 export class User {
     @Prop({required: true, unique: true})
     username: string;
@@ -17,3 +19,7 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Ensure unique indexes for email and username
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ username: 1 }, { unique: true });

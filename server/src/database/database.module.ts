@@ -26,7 +26,6 @@ import { UserModule } from 'src/user/user.module';
       },
       inject: [AppConfigService],
     }),
-    UserModule,
   ],
 })
 export class DatabaseModule {}
