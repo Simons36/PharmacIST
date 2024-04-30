@@ -4,8 +4,6 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
-import { FindUserDto } from './dto/find-user.dto';
-import * as argon from 'argon2';
 
 @Injectable()
 export class UserService {
