@@ -1,60 +1,58 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { UserService } from "src/user/user.service";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
 import * as argon from 'argon2';
-import { AuthLoginDto, AuthRegisterDto } from "./dto";
+import { AuthLoginDto, AuthRegisterDto } from './dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    private userService: UserService,
+    private jwtService : JwtService
+  ) {}
 
-    constructor(private userService : UserService) {}
+  async login(findLoginDto: AuthLoginDto) : Promise<{username : string, access_token : string}> {
+    try {
+      const user = await this.userService.findUser(findLoginDto.email);
 
-    async login(findLoginDto : AuthLoginDto){
+      const isValidPassword = await argon.verify(
+        (await user).password,
+        findLoginDto.password,
+      );
 
+      if (!isValidPassword) {
+        throw new HttpException(`Wrong Password.`, HttpStatus.UNAUTHORIZED);
+      }
 
-        try{
+      const username = (await user).username;
 
-            const user = this.userService.findUser(findLoginDto.email);
+      const payload = {sub : username};
 
-            const isValidPassword = await argon.verify((await user).password, findLoginDto.password)
+      return {
+        username: username,
+        access_token: await this.jwtService.signAsync(payload, {secret : 'TODO: import secret'})
+      }
 
-            if(!isValidPassword){
-                throw new HttpException(
-                    `Wrong Password.`,
-                    HttpStatus.UNAUTHORIZED,
-                );
-            }
-
-            return {msg : "Login successful!"};
-
-        }catch(error){
-
-            return error;
-
-        }
-
-
+    } catch (error) {
+      return error;
     }
+  }
 
-    logout(){
+  logout() {}
 
+  async register(registerDto: AuthRegisterDto) {
+    try {
+      // Hash password
+      const passwordHash = await argon.hash(registerDto.password);
+
+      // Call userService.createUser with the createUserDto
+      return await this.userService.createUser({
+        email: registerDto.email,
+        username: registerDto.username,
+        password: passwordHash,
+      });
+    } catch (error) {
+      return error;
     }
-
-    async register(registerDto : AuthRegisterDto){
-        try {
-            // Hash password
-            const passwordHash = await argon.hash(registerDto.password);
-
-            
-
-            // Call userService.createUser with the createUserDto
-            return await this.userService.createUser({
-                email : registerDto.email,
-                username : registerDto.username,
-                password : passwordHash
-            });
-
-        } catch (error) {
-            return error;
-        }
-    }
+  }
 }

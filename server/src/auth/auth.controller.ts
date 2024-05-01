@@ -9,11 +9,12 @@ export class AuthController{
     constructor(private authService: AuthService){}
 
     @Post('login')
-    login(@Body() loginDto : AuthLoginDto){
+    async login(@Body() loginDto : AuthLoginDto){
 
-        
+        const debug = await this.authService.login(loginDto);
+        console.log(debug);
 
-        return this.authService.login(loginDto);
+        return debug;
     }
 
     @Post('logout')
