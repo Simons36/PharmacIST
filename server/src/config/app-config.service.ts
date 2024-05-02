@@ -24,4 +24,8 @@ export class AppConfigService {
   get mongoPassword(): string {
     return this.configService.get<string>('MONGO_PASSWORD');
   }
+
+  get accessTokenSecretPath() : string {
+    return this.configService.get<string>('ACCESS_TOKEN_SECRET_PATH');
+  }
 }
