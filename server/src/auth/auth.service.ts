@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as argon from 'argon2';
 import * as fs from 'fs';
@@ -14,9 +14,14 @@ export class AuthService {
     private configService: AppConfigService,
   ) {}
 
+  private readonly logger = new Logger(AuthService.name);
+
   async login(
     findLoginDto: AuthLoginDto,
   ): Promise<{ username: string; access_token: string }> {
+
+    this.logger.log("Received login request with email " + findLoginDto.email + ".");
+
     try {
       const user = await this.userService.findUser(findLoginDto.email);
 
@@ -26,6 +31,7 @@ export class AuthService {
       );
 
       if (!isValidPassword) {
+        this.logger.error("Login request with email " + findLoginDto.email + " rejected due to invalid password");
         throw new HttpException(`Wrong Password.`, HttpStatus.UNAUTHORIZED);
       }
 
@@ -35,15 +41,21 @@ export class AuthService {
         sub: username,
       };
 
+      // Sign the JWT token with custom options
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '15m',
+        secret: fs.readFileSync(this.configService.accessTokenSecretPath),
+      });
+
+      // Return response with 200 status code
+      this.logger.log("Login of user '" + username + "' successful");
       return {
         username: username,
-        access_token: await this.jwtService.signAsync(payload, {
-          expiresIn: '15m',
-          secret: fs.readFileSync(this.configService.accessTokenSecretPath),
-        }),
+        access_token: accessToken,
       };
     } catch (error) {
-      return error;
+      this.logger.error("Login failed due to " + error.message);
+      throw new HttpException('Login failed', HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -61,7 +73,7 @@ export class AuthService {
         password: passwordHash,
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Registration failed', HttpStatus.BAD_REQUEST);
     }
   }
 }
