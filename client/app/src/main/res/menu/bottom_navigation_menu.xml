@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_profile"
+        android:title="Profile"
+        android:icon="@drawable/profile_button_icon" />
+
+    <item
+        android:id="@+id/pharmacy_map"
+        android:title="Map"
+        android:icon="@drawable/map_button_icon" />
+
+    <item
+        android:id="@+id/search_medicine"
+        android:title="Search Medicine"
+        android:icon="@drawable/search_medicine_button_icon" />
+
+</menu>
