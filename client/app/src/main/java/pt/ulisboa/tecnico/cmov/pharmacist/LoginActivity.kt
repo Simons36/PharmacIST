@@ -1,10 +1,16 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.Auth
+import pt.ulisboa.tecnico.cmov.pharmacist.auth.exception.WrongPasswordException
+import kotlin.concurrent.thread
+
 
 class LoginActivity : AppCompatActivity() {
 
@@ -38,12 +44,17 @@ class LoginActivity : AppCompatActivity() {
 
             auth = Auth();
 
-            //try {
-                auth.login(applicationContext, email, password);
-            //}catch (){
-            //
-            //}
+            thread {
+                try {
 
+                        auth.login(applicationContext, email, password);
+
+                }catch (e : Exception){
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
 
         }
     }

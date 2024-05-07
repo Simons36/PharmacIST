@@ -19,23 +19,28 @@ export class AuthService {
   async login(
     findLoginDto: AuthLoginDto,
   ): Promise<{ username: string; access_token: string }> {
-
-    this.logger.log("Received login request with email " + findLoginDto.email + ".");
+    this.logger.log(
+      'Received login request with email ' + findLoginDto.email + '.',
+    );
 
     try {
       const user = await this.userService.findUser(findLoginDto.email);
 
       const isValidPassword = await argon.verify(
-        (await user).password,
+        user.password,
         findLoginDto.password,
       );
 
       if (!isValidPassword) {
-        this.logger.error("Login request with email " + findLoginDto.email + " rejected due to invalid password");
-        throw new HttpException(`Wrong Password.`, HttpStatus.UNAUTHORIZED);
+        this.logger.error(
+          'Login request with email ' +
+            findLoginDto.email +
+            ' rejected due to invalid password',
+        );
+        throw new HttpException('Wrong Password.', HttpStatus.UNAUTHORIZED);
       }
 
-      const username = (await user).username;
+      const username = user.username;
 
       const payload = {
         sub: username,
@@ -44,18 +49,29 @@ export class AuthService {
       // Sign the JWT token with custom options
       const accessToken = await this.jwtService.signAsync(payload, {
         expiresIn: '15m',
-        secret: fs.readFileSync(this.configService.accessTokenSecretPath),
+        secret: fs.readFileSync(
+          this.configService.accessTokenSecretPath,
+          'utf8',
+        ),
       });
 
       // Return response with 200 status code
-      this.logger.log("Login of user '" + username + "' successful");
+      this.logger.log(`Login of user '${username}' successful`);
       return {
-        username: username,
+        username,
         access_token: accessToken,
       };
     } catch (error) {
-      this.logger.error("Login failed due to " + error.message);
-      throw new HttpException('Login failed', HttpStatus.UNAUTHORIZED);
+      if (error instanceof HttpException) {
+        // Handle specific HttpException
+        throw error; // Rethrow the HttpException to maintain HTTP status code
+      } else {
+        // Handle generic error
+        this.logger.error(
+          `Login failed due to unknown error: ${error.message}`,
+        );
+        throw new HttpException('Login failed', HttpStatus.UNAUTHORIZED);
+      }
     }
   }
 

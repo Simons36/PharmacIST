@@ -12,10 +12,7 @@ export class AuthController{
     @HttpCode(200)
     async login(@Body() loginDto : AuthLoginDto){
 
-        const debug = await this.authService.login(loginDto);
-        console.log(debug);
-
-        return debug;
+        return await this.authService.login(loginDto);
     }
 
     @Post('logout')

@@ -5,6 +5,8 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import pt.ulisboa.tecnico.cmov.pharmacist.auth.exception.AccountNotFoundException
+import pt.ulisboa.tecnico.cmov.pharmacist.auth.exception.WrongPasswordException
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
 import java.io.*
 import java.net.HttpURLConnection
@@ -17,45 +19,52 @@ class Auth {
         val apiUrl: String = ConfigClass.getUrl(context)
         val loginUrl = "$apiUrl/auth/login"
 
-        // Use Kotlin Coroutine to perform network operation asynchronously
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val url = URL(loginUrl)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.doOutput = true
+        try {
+            val url = URL(loginUrl)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
 
-                // Set request headers (optional)
-                connection.setRequestProperty("Content-Type", "application/json")
+            // Set request headers (optional)
+            connection.setRequestProperty("Content-Type", "application/json")
 
-                // Construct the request body as JSON
-                val requestBody = "{\"email\": \"$email\", \"password\": \"$password\"}"
+            // Construct the request body as JSON
+            val requestBody = "{\"email\": \"$email\", \"password\": \"$password\"}"
 
-                // Write request body to the connection's output stream
-                val outputStream: OutputStream = connection.outputStream
-                outputStream.write(requestBody.toByteArray(StandardCharsets.UTF_8))
-                outputStream.close()
+            // Write request body to the connection's output stream
+            val outputStream: OutputStream = connection.outputStream
+            outputStream.write(requestBody.toByteArray(StandardCharsets.UTF_8))
+            outputStream.close()
 
-                // Get response from the server
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    // Read and handle successful response
-                    val inputStream: InputStream = connection.inputStream
-                    val responseBody = inputStream.bufferedReader().use(BufferedReader::readText)
-                    Log.d("Auth", "Login successful: $responseBody")
-                    inputStream.close()
-                } else {
-                    // Handle error response
-                    val errorStream: InputStream = connection.errorStream
-                    val errorBody = errorStream?.bufferedReader()?.use(BufferedReader::readText) ?: ""
-                    Log.e("Auth", "Login failed with HTTP status code: $responseCode. Error body: $errorBody")
-                    errorStream?.close()
+            // Get response from the server
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Read and handle successful response
+                val inputStream: InputStream = connection.inputStream
+                val responseBody = inputStream.bufferedReader().use(BufferedReader::readText)
+                Log.d("Auth", "Login successful: $responseBody")
+                inputStream.close()
+            } else {
+                // Handle error response
+                val errorStream: InputStream = connection.errorStream
+                val errorBody = errorStream?.bufferedReader()?.use(BufferedReader::readText) ?: ""
+                Log.e("Auth", "Login failed with HTTP status code: $responseCode. Error body: $errorBody")
+                errorStream?.close()
+
+                // Now throw exceptions, according to error
+
+                if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED){ //this means wrong password
+                    throw WrongPasswordException(email);
+                } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND){
+                    throw AccountNotFoundException(email);
                 }
-
-                connection.disconnect()
-            } catch (e: Exception) {
-                Log.e("Auth", "Error during login: ${e.message}", e)
             }
+
+            connection.disconnect()
+        } catch (e: Exception) {
+            Log.e("Auth", "Error during login: ${e.message}", e)
+            throw e
         }
+
     }
 }
