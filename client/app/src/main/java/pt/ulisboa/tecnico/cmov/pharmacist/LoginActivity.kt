@@ -1,20 +1,21 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import pt.ulisboa.tecnico.cmov.pharmacist.auth.Auth
-import pt.ulisboa.tecnico.cmov.pharmacist.auth.exception.WrongPasswordException
+import pt.ulisboa.tecnico.cmov.pharmacist.auth.AuthenticationServiceImpl
 import kotlin.concurrent.thread
 
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var auth: Auth // Declare a property to hold the Auth instance
+    private lateinit var auth: AuthenticationServiceImpl // Declare a property to hold the Auth instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,19 +43,28 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            auth = Auth();
+            // Class to handle authentication operations (login, register, logout)
+            auth = AuthenticationServiceImpl(applicationContext);
 
-            thread {
-                try {
 
-                        auth.login(applicationContext, email, password);
-
-                }catch (e : Exception){
+            auth.login(email, password) { success, errorMessage ->
+                if (success) {
+                    // Login successful, navigate to MainMenuActivity
+                    val intent = Intent(this@LoginActivity, MainMenuActivity::class.java)
+                    startActivity(intent)
+                    finish() // Optional: Finish LoginActivity to prevent back navigation
+                } else {
+                    // Login failed, show error message to the user
                     Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@LoginActivity,
+                            errorMessage ?: "Login failed. Please try again.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
+
 
         }
     }
