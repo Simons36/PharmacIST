@@ -28,8 +28,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="008fc4" />
-                            <entry key="outputName" value="current_location_marker" />
+                            <entry key="color" value="0048b4" />
+                            <entry key="outputName" value="baseline_my_location_24" />
                           </map>
                         </option>
                       </PersistentState>

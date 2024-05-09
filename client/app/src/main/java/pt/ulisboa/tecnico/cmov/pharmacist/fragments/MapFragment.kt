@@ -81,7 +81,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 ?: return
 
         // Resize the bitmap to desired dimensions
-        val scaledBitmap = Bitmap.createScaledBitmap(UtilFunctions().drawableToBitmap(drawable), 64, 64, false)
+        val scaledBitmap = Bitmap.createScaledBitmap(UtilFunctions().drawableToBitmap(drawable), 80, 80, false)
 
         // Create a BitmapDescriptor from the resized bitmap
         val icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
