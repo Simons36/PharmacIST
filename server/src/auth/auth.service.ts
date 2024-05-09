@@ -66,7 +66,7 @@ export class AuthService {
         // Handle specific HttpException
         throw error; // Rethrow the HttpException to maintain HTTP status code
       } else {
-        // Handle generic error
+        // Handle generic errorkey
         this.logger.error(
           `Login failed due to unknown error: ${error.message}`,
         );
