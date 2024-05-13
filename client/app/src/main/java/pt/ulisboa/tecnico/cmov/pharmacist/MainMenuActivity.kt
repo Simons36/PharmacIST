@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -41,9 +42,39 @@ class MainMenuActivity : AppCompatActivity() {
     }
 
     private fun replaceFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
+        val transaction = supportFragmentManager.beginTransaction()
+
+        // Check if there's already a fragment added to the container
+        val currentFragment = getVisibleFragment()
+
+        // Hide the current fragment if it exists
+        currentFragment?.let {
+            transaction.hide(it)
+            Log.i("DEBUG", "Hiding fragment: ${it.javaClass.simpleName}")
+        }
+
+        // Check if the fragment to be replaced is already added
+        val existingFragment = supportFragmentManager.findFragmentByTag(fragment.javaClass.simpleName)
+
+        if (existingFragment == null) {
+            // Add the new fragment if it's not already added
+            transaction.add(R.id.fragment_container, fragment, fragment.javaClass.simpleName)
+        } else {
+            // Show the existing fragment if it was already added
+            transaction.show(existingFragment)
+        }
+
+        // Commit the transaction
+        transaction.commit()
     }
+
+    private fun getVisibleFragment(): Fragment? {
+        val fragments: List<Fragment> = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment.isVisible) return fragment
+        }
+        return null
+    }
+
 
 }
