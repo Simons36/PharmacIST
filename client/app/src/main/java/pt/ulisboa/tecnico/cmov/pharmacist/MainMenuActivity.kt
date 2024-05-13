@@ -27,14 +27,17 @@ class MainMenuActivity : AppCompatActivity() {
                     replaceFragment(ProfileFragment())
                     true
                 }
+
                 R.id.pharmacy_map -> {
                     replaceFragment(mapFragment)
                     true
                 }
+
                 R.id.search_medicine -> {
                     replaceFragment(SearchMedicineFragment())
                     true
                 }
+
                 else -> false
             }
         }
@@ -56,7 +59,8 @@ class MainMenuActivity : AppCompatActivity() {
         }
 
         // Check if the fragment to be replaced is already added
-        val existingFragment = supportFragmentManager.findFragmentByTag(fragment.javaClass.simpleName)
+        val existingFragment =
+            supportFragmentManager.findFragmentByTag(fragment.javaClass.simpleName)
 
         if (existingFragment == null) {
             // Add the new fragment if it's not already added
@@ -77,3 +81,5 @@ class MainMenuActivity : AppCompatActivity() {
         }
         return null
     }
+
+}
