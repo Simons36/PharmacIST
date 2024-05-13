@@ -93,8 +93,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             MarkerOptions()
                 .position(latLng)
                 .title("Current Location")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
         )
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
     }
 
     override fun onRequestPermissionsResult(
