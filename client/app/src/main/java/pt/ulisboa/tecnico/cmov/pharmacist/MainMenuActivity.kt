@@ -11,25 +11,27 @@ import pt.ulisboa.tecnico.cmov.pharmacist.fragments.SearchMedicineFragment
 
 class MainMenuActivity : AppCompatActivity() {
 
+    private lateinit var mapFragment: MapFragment
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
+
+        // Initialize map fragment only once
+        mapFragment = MapFragment()
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.navigation_profile -> {
-                    // Handle click on Home tab
                     replaceFragment(ProfileFragment())
                     true
                 }
                 R.id.pharmacy_map -> {
-                    // Handle click on Dashboard tab
-                    replaceFragment(MapFragment())
+                    replaceFragment(mapFragment)
                     true
                 }
                 R.id.search_medicine -> {
-                    // Handle click on Notifications tab
                     replaceFragment(SearchMedicineFragment())
                     true
                 }
@@ -75,6 +77,3 @@ class MainMenuActivity : AppCompatActivity() {
         }
         return null
     }
-
-
-}
