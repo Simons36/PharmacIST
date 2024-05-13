@@ -33,8 +33,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var currentLocation: Location
 
-    private var isMapReady = false
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,8 +53,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
-        isMapReady = true
-        googleMap.uiSettings.isZoomControlsEnabled = true
 
         getLastLocation()
     }
@@ -79,21 +75,29 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         task.addOnSuccessListener { location ->
             if (location != null) {
                 currentLocation = location
-                if (isMapReady) {
-                    addMarkerToCurrentLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(currentLocation.latitude, currentLocation.longitude), 15f))
-                }
+                addMarkerToCurrentLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(currentLocation.latitude, currentLocation.longitude), 15f))
+
             }
         }
     }
 
     private fun addMarkerToCurrentLocation(latLng: LatLng) {
-        // Add marker to the map with the custom icon
+        val drawable =
+            ResourcesCompat.getDrawable(resources, R.drawable.current_location_marker, null)
+                ?: return
+
+        // Resize the bitmap to desired dimensions
+        val scaledBitmap = Bitmap.createScaledBitmap(UtilFunctions().drawableToBitmap(drawable), 80, 80, false)
+
+        // Create a BitmapDescriptor from the resized bitmap
+        val icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+
         googleMap.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title("Current Location")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                .icon(icon)
         )
     }
 
