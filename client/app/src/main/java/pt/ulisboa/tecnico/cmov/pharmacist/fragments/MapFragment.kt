@@ -13,25 +13,22 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.AdvancedMarkerOptions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
-import java.lang.reflect.Field
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
     private val FINE_PERMISSION_CODE = 1
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private lateinit var currentLocation: Location
+    private lateinit var lastKnownLocation: Location
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,10 +51,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        getLastLocation()
+        setupMap()
+
     }
 
-    private fun getLastLocation() {
+    private fun setupMap() {
+        val taskLocation = getLastKnownLocation()
+
+        taskLocation?.addOnSuccessListener { location ->
+            if (location != null) {
+                lastKnownLocation = location
+                addMarkerToCurrentLocation()
+                moveMarkerToLocation(lastKnownLocation)
+
+            }
+        }
+    }
+
+    private fun getLastKnownLocation() : Task<Location>?{
         if (ActivityCompat.checkSelfPermission(
                 requireActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -68,21 +79,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 FINE_PERMISSION_CODE
             )
-            return
+            return null;
         }
 
         val task: Task<Location> = fusedLocationProviderClient.lastLocation
-        task.addOnSuccessListener { location ->
-            if (location != null) {
-                currentLocation = location
-                addMarkerToCurrentLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(currentLocation.latitude, currentLocation.longitude), 15f))
-
-            }
-        }
+        return task;
     }
 
-    private fun addMarkerToCurrentLocation(latLng: LatLng) {
+    private fun addMarkerToCurrentLocation() {
         val drawable =
             ResourcesCompat.getDrawable(resources, R.drawable.current_location_marker, null)
                 ?: return
@@ -95,10 +99,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         googleMap.addMarker(
             MarkerOptions()
-                .position(latLng)
+                .position(LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude))
                 .title("Current Location")
                 .icon(icon)
         )
+    }
+
+    private fun moveMarkerToLocation(location: Location){
+        val latLng = LatLng(location.latitude, location.longitude)
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
     }
 
     override fun onRequestPermissionsResult(
@@ -110,7 +119,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         if (requestCode == FINE_PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation()
+                getLastKnownLocation()
             } else {
                 Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show()
             }
