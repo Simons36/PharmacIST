@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 
@@ -56,35 +57,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationListener {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
-        // Initialize locationManager using getSystemService
-        locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        setupLocationManager()
 
-
-        if (ActivityCompat.checkSelfPermission(
-                requireActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireActivity(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                FINE_PERMISSION_CODE
-            )
-
-            onRequestPermissionsResult(FINE_PERMISSION_CODE, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), intArrayOf(PackageManager.PERMISSION_GRANTED))
-        }
-
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this)
+        setupCenterCameraButton(view);
 
         return view
     }
@@ -150,6 +125,38 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationListener {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
     }
 
+    private fun setupLocationManager(){
+        // Initialize locationManager using getSystemService
+        locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+
+        if (ActivityCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                FINE_PERMISSION_CODE
+            )
+
+            onRequestPermissionsResult(FINE_PERMISSION_CODE, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), intArrayOf(PackageManager.PERMISSION_GRANTED))
+        }
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this)
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -170,5 +177,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationListener {
         lastKnownLocation = location
         currentLocationMarker?.position = LatLng(location.latitude, location.longitude)
         moveCameraToLocation(lastKnownLocation)
+    }
+
+    private fun setupCenterCameraButton(view: View){
+        val centerCurrentLocationButton = view.findViewById<FloatingActionButton>(R.id.centerCurrentLocationButton)
+        centerCurrentLocationButton.setOnClickListener {
+            moveCameraToLocation(lastKnownLocation)
+        }
     }
 }
