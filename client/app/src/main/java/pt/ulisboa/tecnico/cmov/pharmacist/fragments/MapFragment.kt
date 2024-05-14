@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.fragments
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationListener
 import android.os.Bundle
@@ -7,11 +8,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
@@ -41,6 +44,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         Log.i("MapFragment", "MapFragment DEBUG")
 
         setupCenterCameraButton(view);
+        setupAddPharmacyButton(view);
 
         return view
     }
@@ -86,6 +90,11 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
+        locationService.stopLocationUpdates()
+    }
+
     private fun setupCenterCameraButton(view: View){
         val centerCurrentLocationButton = view.findViewById<FloatingActionButton>(R.id.centerCurrentLocationButton)
         centerCurrentLocationButton.setOnClickListener {
@@ -97,8 +106,12 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        locationService.stopLocationUpdates()
+    private fun setupAddPharmacyButton(view : View){
+        val addPharmacyButton = view.findViewById<Button>(R.id.btnAddPharmacy)
+        addPharmacyButton.setOnClickListener {
+            // Navigate to AddPharmacyActivity
+            val intent = Intent(requireContext(), AddPharmacyActivity::class.java)
+            startActivity(intent)
+        }
     }
 }

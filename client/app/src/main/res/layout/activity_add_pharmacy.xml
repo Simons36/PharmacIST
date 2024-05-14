@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp">
+
+    <!-- Title TextView -->
+    <TextView
+        android:id="@+id/titleAddPharmacy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Pharmacy"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@color/white"/>
+
+    <!-- Name Label TextView -->
+    <TextView
+        android:id="@+id/labelName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name:"
+        android:textSize="16sp"
+        android:layout_below="@id/titleAddPharmacy"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Name EditText -->
+    <EditText
+        android:id="@+id/editTextPharmacyName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelName"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter pharmacy name"
+        android:inputType="text"
+        app:backgroundTint="@color/white" />
+
+    <!-- Location Label TextView -->
+    <TextView
+        android:id="@+id/labelLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location:"
+        android:textSize="16sp"
+        android:layout_below="@id/editTextPharmacyName"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Address EditText and Buttons Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelLocation"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp">
+
+        <!-- Address EditText -->
+        <EditText
+            android:id="@+id/editTextAddress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter address"
+            android:inputType="text"
+            app:backgroundTint="@color/white" />
+
+        <!-- First Circular Button -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnSetAddressToCurrentLocation"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/current_location_marker"
+            android:tint="@color/white"
+            app:backgroundTint="@color/colorPrimary"
+            app:fabCustomSize="41dp" />
+
+        <!-- Second Circular Button -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnPickAddressFromMap"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:fabCustomSize="40dp"
+            android:src="@drawable/map_icon"
+            app:backgroundTint="@color/colorPrimary"
+            android:tint="@color/white"/>
+    </LinearLayout>
+
+    <!-- Confirm Button -->
+    <Button
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add New Pharmacy"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@color/white"/>
+
+</RelativeLayout>
