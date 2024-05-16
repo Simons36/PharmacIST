@@ -10,6 +10,7 @@ import com.google.android.gms.tasks.Task
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.os.Parcelable
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationServices
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.MapFragment
@@ -18,7 +19,7 @@ class LocationService(
     private val context: Context,
     private val mapHelper: MapHelper,
     private val mapFragment: MapFragment
-) : LocationListener {
+) : LocationListener{
 
     private val MIN_TIME = 60000L // 60 seconds for updating location
     private val MIN_DISTANCE = 90f // 90 meters for updating location
@@ -119,4 +120,7 @@ class LocationService(
     fun stopLocationUpdates() {
         locationManager.removeUpdates(this)
     }
+
+
+
 }

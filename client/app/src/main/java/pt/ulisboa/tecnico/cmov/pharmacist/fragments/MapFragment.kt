@@ -111,7 +111,9 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         addPharmacyButton.setOnClickListener {
             // Navigate to AddPharmacyActivity
             val intent = Intent(requireContext(), AddPharmacyActivity::class.java)
+            intent.putExtra("lastKnownLocation", locationService.getLastKnownLocation())
             startActivity(intent)
+
         }
     }
 }
