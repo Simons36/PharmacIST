@@ -10,6 +10,20 @@
         android:layout_height="match_parent"
         android:layout_gravity="center" />
 
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:textColor="@color/white"
+        android:layout_margin="16dp"
+        android:layout_gravity="top|end"
+        android:backgroundTint="@color/colorPrimary"
+        android:visibility="gone" /> <!-- Initially hidden -->
+
+
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -2,9 +2,12 @@ package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.R.attr.button
 import android.app.AlertDialog
+import android.content.Intent
 import android.location.Location
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -52,8 +55,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
         val extras = intent.extras
         if(extras != null){
-            Log.i("DEBUG", "AAAAA")
-            lastKnownLocation = extras.getParcelable("lastKnownLocation", Location::class.java)!!
+            lastKnownLocation = extras.getParcelableCompat("lastKnownLocation", Location::class.java)!!
         }else{
             Toast.makeText(this, "Location services not available right now", Toast.LENGTH_SHORT).show()
             finish()
@@ -212,7 +214,11 @@ class AddPharmacyActivity() : AppCompatActivity() {
     }
 
     private fun openMapFunction(){
-        Toast.makeText(this, "Opening map (TODO)", Toast.LENGTH_SHORT).show()
+        //launch back the main menu activity, which will have the map
+        val intent = Intent(this, MainMenuActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        intent.putExtra("fromAddPharmacyActivity", true)
+        startActivity(intent)
     }
 
     private fun switchBehaviorOfPickAddressFromMapButton(){
@@ -247,6 +253,15 @@ class AddPharmacyActivity() : AppCompatActivity() {
         }
 
 
+
     }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    inline fun <reified T : Parcelable> Bundle.getParcelableCompat(key: String, clazz: Class<T>): T? {
+        return when {
+            SDK_INT >= 33 -> getParcelable(key, clazz)
+            else -> @Suppress("DEPRECATION") getParcelable(key)
+        }
+    }
+
 
 }

@@ -1,8 +1,12 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.MapFragment
@@ -13,6 +17,9 @@ class MainMenuActivity : AppCompatActivity() {
 
     private lateinit var mapFragment: MapFragment
 
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var rootLayout: ConstraintLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
@@ -20,7 +27,10 @@ class MainMenuActivity : AppCompatActivity() {
         // Initialize map fragment only once
         mapFragment = MapFragment()
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        // Layout to adjust when the map is requested from AddPharmacyActivity
+        rootLayout = findViewById(R.id.root_layout)
+
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.navigation_profile -> {
@@ -45,6 +55,30 @@ class MainMenuActivity : AppCompatActivity() {
         // Set the default selected item
         bottomNavigationView.selectedItemId = R.id.navigation_profile
     }
+
+    //to handle map being requested from add pharmacy activity
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        if(intent.extras != null){
+            if(intent.extras!!.getBoolean("fromAddPharmacyActivity")){
+                //remove bottom navigation menu
+                bottomNavigationView.visibility = View.GONE
+                // Adjust layout to make the fragment container fill the whole screen
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(rootLayout)
+                constraintSet.connect(R.id.fragment_container, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
+                constraintSet.applyTo(rootLayout)
+
+                // Hide two buttons
+                mapFragment.flipToPickLocationMode()
+
+            }
+        }
+
+
+    }
+
 
     private fun replaceFragment(fragment: Fragment) {
         val transaction = supportFragmentManager.beginTransaction()
