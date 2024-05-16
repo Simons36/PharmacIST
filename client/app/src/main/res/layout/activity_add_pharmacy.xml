@@ -67,6 +67,7 @@
 
     <!-- Address EditText and Buttons Container -->
     <LinearLayout
+        android:id="@+id/pharmacyLocationSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/labelLocation"

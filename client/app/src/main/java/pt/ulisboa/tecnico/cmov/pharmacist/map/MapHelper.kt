@@ -24,7 +24,7 @@ class MapHelper(private val context: Context, private val googleMap: GoogleMap, 
                 ?: return
 
         // Resize the bitmap to desired dimensions
-        val scaledBitmap = Bitmap.createScaledBitmap(UtilFunctions().drawableToBitmap(drawable), 80, 80, false)
+        val scaledBitmap = Bitmap.createScaledBitmap(UtilFunctions.drawableToBitmap(drawable), 80, 80, false)
 
         // Create a BitmapDescriptor from the resized bitmap
         val icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
