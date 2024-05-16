@@ -30,6 +30,7 @@
 
         <activity
             android:name=".MainMenuActivity"
+            android:launchMode="singleTask"
             android:exported="true">
         </activity>
 

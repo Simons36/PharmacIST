@@ -5,11 +5,15 @@ import android.content.pm.PackageManager
 import android.location.LocationListener
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
@@ -18,6 +22,7 @@ import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
+import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
 
 class MapFragment : Fragment(), OnMapReadyCallback{
 
@@ -29,6 +34,11 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
     private lateinit var locationService : LocationService;
     private lateinit var mapHelper : MapHelper;
+
+    // Two buttons
+    private lateinit var centerCurrentLocationButton : FloatingActionButton
+    private lateinit var addPharmacyButton : Button
+    private lateinit var cancelButton : Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,6 +55,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
         setupCenterCameraButton(view);
         setupAddPharmacyButton(view);
+        setupCancelButton(view);
 
         return view
     }
@@ -96,7 +107,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     }
 
     private fun setupCenterCameraButton(view: View){
-        val centerCurrentLocationButton = view.findViewById<FloatingActionButton>(R.id.centerCurrentLocationButton)
+        centerCurrentLocationButton = view.findViewById<FloatingActionButton>(R.id.centerCurrentLocationButton)
         centerCurrentLocationButton.setOnClickListener {
             if(locationService.getLastKnownLocation() == null){
                 Toast.makeText(requireContext(), "Location not available", Toast.LENGTH_SHORT).show()
@@ -107,7 +118,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     }
 
     private fun setupAddPharmacyButton(view : View){
-        val addPharmacyButton = view.findViewById<Button>(R.id.btnAddPharmacy)
+        addPharmacyButton = view.findViewById<Button>(R.id.btnAddPharmacy)
         addPharmacyButton.setOnClickListener {
             // Navigate to AddPharmacyActivity
             val intent = Intent(requireContext(), AddPharmacyActivity::class.java)
@@ -116,4 +127,20 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
         }
     }
+
+    private fun setupCancelButton(view : View){
+        cancelButton = view.findViewById<Button>(R.id.btnCancel)
+        cancelButton.setOnClickListener {
+
+        }
+    }
+
+    fun flipToPickLocationMode() {
+        centerCurrentLocationButton.visibility = View.GONE
+        addPharmacyButton.visibility = View.GONE
+
+        cancelButton.visibility = View.VISIBLE
+    }
+
+
 }
