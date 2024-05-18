@@ -12,6 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.MapFragment
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.ProfileFragment
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.SearchMedicineFragment
+import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
 
 class MainMenuActivity : AppCompatActivity() {
 

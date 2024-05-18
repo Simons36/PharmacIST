@@ -14,6 +14,8 @@ public class ConfigClass {
 
     private static final String TAG = "ConfigClass";
 
+
+
     public static String getUrl(Context context){
         return getConfigValue(context, "api_url");
     }

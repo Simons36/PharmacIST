@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center" />
 
-    <!-- Cancel Button -->
+    <!-- Cancel Button, for picking location in add pharmacy -->
     <Button
         android:id="@+id/btnCancel"
         android:layout_width="wrap_content"
@@ -51,5 +51,16 @@
             android:textColor="@color/white"
             android:layout_margin="16dp"/>
     </LinearLayout>
+
+    <!-- Confirm Button, for picking location in add pharmacy -->
+    <Button
+        android:id="@+id/pickLocationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick Location"
+        android:textColor="@color/white"
+        android:layout_margin="16dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:visibility="gone" /> <!-- Initially hidden -->
 
 </FrameLayout>

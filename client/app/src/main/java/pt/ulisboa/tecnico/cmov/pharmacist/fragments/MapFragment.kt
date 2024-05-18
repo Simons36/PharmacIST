@@ -2,18 +2,13 @@ package pt.ulisboa.tecnico.cmov.pharmacist.fragments
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.LocationListener
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.RelativeLayout
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
@@ -22,7 +17,7 @@ import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
+import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
 
 class MapFragment : Fragment(), OnMapReadyCallback{
 
@@ -30,15 +25,27 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     private val MIN_DISTANCE = 90f; //1000 meters for updating location
     private val FINE_PERMISSION_CODE = 1;
 
+    // ID for the marker that will be placed when the user picks a location
+    // We need this name to then remove the marker when user confirms or cancels operation
+    private val PICK_LOCATION_MARKER_ID = "new_pharmacy_location";
+
     private lateinit var googleMap: GoogleMap
 
     private lateinit var locationService : LocationService;
     private lateinit var mapHelper : MapHelper;
 
-    // Two buttons
+    // Widgets
     private lateinit var centerCurrentLocationButton : FloatingActionButton
     private lateinit var addPharmacyButton : Button
     private lateinit var cancelButton : Button
+    private lateinit var pickLocationButton : Button
+
+    private var isForPickLocation = false;
+
+    // This is a variable to check if the user has picked a location
+    // (so he doesnt place more than one markers)
+    private var hasPickedLocation = false;
+    private var pickedLocation : LatLng? = null;
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,6 +63,15 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         setupCenterCameraButton(view);
         setupAddPharmacyButton(view);
         setupCancelButton(view);
+        setupPickLocationButton(view);
+
+        if(arguments != null){
+
+            val mapMode = arguments?.getInt("mapMode")
+            if(mapMode == MapOpeningMode.MAP_PICK_LOCATION_MODE){
+                isForPickLocation = true
+            }
+        }
 
         return view
     }
@@ -80,6 +96,10 @@ class MapFragment : Fragment(), OnMapReadyCallback{
                 mapHelper.moveCamera(location, 15f)
 
             }
+        }
+
+        if(isForPickLocation){
+            flipToPickLocationMode()
         }
     }
 
@@ -135,11 +155,69 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         }
     }
 
+    private fun setupPickLocationButton(view : View){
+        pickLocationButton = view.findViewById(R.id.pickLocationButton)
+        pickLocationButton.setOnClickListener {
+            if(!pickLocationButton.isActivated){
+                Toast.makeText(requireContext(), "Please click on the map to pick a location",
+                    Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else {
+                pickedLocation?.let {
+                    val intent = Intent(requireContext(), AddPharmacyActivity::class.java).apply {
+                        putExtra("pickedLocation", it)
+                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    }
+                    startActivity(intent)
+                }
+            }
+        }
+        checkIfPickLocationButtonShouldBeEnabled()
+    }
+
+
     fun flipToPickLocationMode() {
-        centerCurrentLocationButton.visibility = View.GONE
+
+        //centerCurrentLocationButton.visibility = View.GONE
         addPharmacyButton.visibility = View.GONE
 
         cancelButton.visibility = View.VISIBLE
+        pickLocationButton.visibility = View.VISIBLE
+
+        // When user clicks map, add a marker to the map
+        googleMap.setOnMapClickListener { latLng ->
+            if(!hasPickedLocation){
+                mapHelper.addDefaultMarker(latLng, "New Pharmacy Location", PICK_LOCATION_MARKER_ID)
+                hasPickedLocation = true
+            }else{
+                mapHelper.moveDefaultMarker(PICK_LOCATION_MARKER_ID, latLng)
+            }
+
+            pickedLocation = latLng
+
+            checkIfPickLocationButtonShouldBeEnabled()
+        }
+    }
+
+    private fun checkIfPickLocationButtonShouldBeEnabled(){
+        if(hasPickedLocation){
+            pickLocationButton.isActivated = true
+            pickLocationButton.backgroundTintList = resources.getColorStateList(R.color.colorPrimary)
+        }else{
+            pickLocationButton.isActivated = false
+            pickLocationButton.backgroundTintList = resources.getColorStateList(android.R.color.darker_gray)
+        }
+    }
+
+    companion object{
+        fun newInstance(mapModeValue : Int): MapFragment {
+            val f = MapFragment()
+            // Supply index input as an argument.
+            val args = Bundle()
+            args.putInt("mapMode", mapModeValue)
+            f.setArguments(args)
+            return f
+        }
     }
 
 
