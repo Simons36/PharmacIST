@@ -24,6 +24,7 @@ class PickLocationFromMapActivity : AppCompatActivity() {
             .commit()
 
 
+
         // Add any event listeners or additional setup here
     }
 

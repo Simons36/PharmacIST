@@ -78,19 +78,6 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-
-        intent.extras?.let {
-            val pickedLocation: LatLng? = it.getParcelableCompat("pickedLocation", LatLng::class.java)
-            pickedLocation?.let { location ->
-                // Update the location in your activity
-                uponReceivingLocationFromMap(location.latitude, location.longitude)
-            }
-        }
-    }
-
     private fun initWidgets(){
         initCancelButton()
         initConfirmButton()
@@ -126,14 +113,11 @@ class AddPharmacyActivity() : AppCompatActivity() {
             // Set the address to the current location
             setLocationToCurrentLocation()
 
-            locationPopulated = true
-            checkIfConfirmButtonShouldBeEnabled()
 
-            addressEditText.setText("Address set to current location.")
-            addressEditText.isEnabled = false
-            addressEditText.backgroundTintList = resources.getColorStateList(com.google.android.material.R.color.mtrl_btn_transparent_bg_color)
 
-            removeTwoButtonsAndAddClearButtonForLocationSection()
+
+
+            setLocationSectionFilled("Address set to current location.")
 
             Toast.makeText(this, "Address set to current location", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
@@ -156,7 +140,13 @@ class AddPharmacyActivity() : AppCompatActivity() {
         confirmButton.isEnabled = nameEditTextPopulated && locationPopulated
     }
 
-    private fun removeTwoButtonsAndAddClearButtonForLocationSection(){
+    private fun setLocationSectionFilled(textForEditText : String){
+
+        // Make the edit text not editable and change its background color
+        addressEditText.setText(textForEditText)
+        addressEditText.isEnabled = false
+        addressEditText.backgroundTintList = resources.getColorStateList(com.google.android.material.R.color.mtrl_btn_transparent_bg_color)
+
         // Find the container for the buttons and EditText
         val addressContainer = findViewById<LinearLayout>(R.id.pharmacyLocationSection)
 
@@ -164,7 +154,8 @@ class AddPharmacyActivity() : AppCompatActivity() {
         addressContainer.removeView(setAddressToCurrentLocationButton)
         switchBehaviorOfPickAddressFromMapButton()
 
-
+        locationPopulated = true
+        checkIfConfirmButtonShouldBeEnabled()
     }
 
     private fun initPharmacyNameEditText(){
@@ -297,11 +288,15 @@ class AddPharmacyActivity() : AppCompatActivity() {
     }
 
     private fun uponReceivingLocationFromMap(latitude: Double, longitude: Double){
+
+        // Add received coordinates to the AddPharmacyDto
         addPharmacyDtoBuilder.setLatitude(latitude)
         addPharmacyDtoBuilder.setLongitude(longitude)
-        addressEditText.setText("Address set to picked location.")
-        locationPopulated = true
-        checkIfConfirmButtonShouldBeEnabled()
+
+        // Update the address EditText
+        setLocationSectionFilled("Address set to custom location.")
+
+
         Toast.makeText(this, "Address set to picked location: $latitude, $longitude", Toast.LENGTH_SHORT).show()
     }
 
@@ -309,6 +304,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
+            Log.i("DEBUG", "teste")
             // There are no request codes
             val latitude = data?.getDoubleExtra("latitude", 0.0)
             val longitude = data?.getDoubleExtra("longitude", 0.0)
