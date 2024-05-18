@@ -12,11 +12,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import pt.ulisboa.tecnico.cmov.pharmacist.R
+import pt.ulisboa.tecnico.cmov.pharmacist.exception.ErrorAddingMarkerException
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 
 class MapHelper(private val context: Context, private val googleMap: GoogleMap, private val resources: Resources) {
 
     private var currentLocationMarker : Marker? = null
+
+    private var defaultMarkersMap = mutableMapOf<String, Marker>()
 
     fun addCurrentLocationMarker(location: LatLng, title: String, drawableId : Int) {
         val drawable =
@@ -43,6 +46,15 @@ class MapHelper(private val context: Context, private val googleMap: GoogleMap, 
 
     fun moveCamera(location: Location, zoomLevel: Float) {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), zoomLevel))
+    }
+
+    fun addDefaultMarker(latLng: LatLng, title: String, id : String) {
+        val marker = googleMap.addMarker(MarkerOptions().position(latLng).title(title)) ?: throw ErrorAddingMarkerException()
+        defaultMarkersMap[id] = marker
+    }
+
+    fun moveDefaultMarker(id: String, latLng: LatLng) {
+        defaultMarkersMap[id]?.position = latLng
     }
 
     // Add more map-related functions as needed...

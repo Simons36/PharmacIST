@@ -1,7 +1,8 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
-import android.R.attr.button
+import android.app.Activity
 import android.app.AlertDialog
+import android.app.Instrumentation.ActivityResult
 import android.content.Intent
 import android.location.Location
 import android.os.Build
@@ -15,13 +16,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import pt.ulisboa.tecnico.cmov.pharmacist.dto.AddPharmacyDtoBuilder
-import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
 
 
@@ -48,14 +49,23 @@ class AddPharmacyActivity() : AppCompatActivity() {
     private lateinit var setAddressToCurrentLocationButton : FloatingActionButton
     private lateinit var pickAddressFromMapButton : FloatingActionButton
 
+    // To launch the map activity to pick location of new pharmacy
+    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_pharmacy)
 
+        initResultLauncher();
+
+        Log.i("DEBUG", "$nameEditTextPopulated")
+
         val extras = intent.extras
         if(extras != null){
             lastKnownLocation = extras.getParcelableCompat("lastKnownLocation", Location::class.java)!!
+
         }else{
             Toast.makeText(this, "Location services not available right now", Toast.LENGTH_SHORT).show()
             finish()
@@ -68,6 +78,19 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        intent.extras?.let {
+            val pickedLocation: LatLng? = it.getParcelableCompat("pickedLocation", LatLng::class.java)
+            pickedLocation?.let { location ->
+                // Update the location in your activity
+                uponReceivingLocationFromMap(location.latitude, location.longitude)
+            }
+        }
+    }
+
     private fun initWidgets(){
         initCancelButton()
         initConfirmButton()
@@ -75,6 +98,23 @@ class AddPharmacyActivity() : AppCompatActivity() {
         initAddressEditText()
         initSetAddressToCurrentLocationButton()
         initPickAddressFromMapButton()
+    }
+
+    private fun initResultLauncher(){
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // There are no request codes
+                Log.i("DEBUG", "YOOOOOOOOOOOOOO")
+                val data: Intent? = result.data
+
+                val latitude = data?.getDoubleExtra("latitude", 0.0)
+                val longitude = data?.getDoubleExtra("longitude", 0.0)
+
+                if(latitude != null && longitude != null){
+                    uponReceivingLocationFromMap(latitude, longitude)
+                }
+            }
+        }
     }
 
     private fun showCurrentLocationDialog() {
@@ -215,10 +255,10 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
     private fun openMapFunction(){
         //launch back the main menu activity, which will have the map
-        val intent = Intent(this, MainMenuActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        intent.putExtra("fromAddPharmacyActivity", true)
-        startActivity(intent)
+        val intent = Intent(this, PickLocationFromMapActivity::class.java)
+
+
+        resultLauncher.launch(intent)
     }
 
     private fun switchBehaviorOfPickAddressFromMapButton(){
@@ -255,6 +295,30 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
 
     }
+
+    private fun uponReceivingLocationFromMap(latitude: Double, longitude: Double){
+        addPharmacyDtoBuilder.setLatitude(latitude)
+        addPharmacyDtoBuilder.setLongitude(longitude)
+        addressEditText.setText("Address set to picked location.")
+        locationPopulated = true
+        checkIfConfirmButtonShouldBeEnabled()
+        Toast.makeText(this, "Address set to picked location: $latitude, $longitude", Toast.LENGTH_SHORT).show()
+    }
+
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            val latitude = data?.getDoubleExtra("latitude", 0.0)
+            val longitude = data?.getDoubleExtra("longitude", 0.0)
+
+            if(latitude != null && longitude != null){
+                uponReceivingLocationFromMap(latitude, longitude)
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     inline fun <reified T : Parcelable> Bundle.getParcelableCompat(key: String, clazz: Class<T>): T? {
         return when {

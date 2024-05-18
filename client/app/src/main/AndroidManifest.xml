@@ -36,6 +36,12 @@
 
         <activity
             android:name=".AddPharmacyActivity"
+            android:launchMode="singleTask"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".PickLocationFromMapActivity"
             android:exported="true">
         </activity>
 
