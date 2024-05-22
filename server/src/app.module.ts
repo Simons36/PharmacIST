@@ -11,9 +11,10 @@ import { User, UserSchema } from './user/schemas/user.schema';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
+import { PharmacyModule } from './pharmacy/pharmacy.module';
 
 @Module({
-  imports: [UserModule, AuthModule, AppConfigModule, DatabaseModule, JwtModule, MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
+  imports: [UserModule, AuthModule, AppConfigModule, DatabaseModule, JwtModule, MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), PharmacyModule],
   controllers: [AuthController],
   providers: [AuthService, AppConfigService, UserService],
 })

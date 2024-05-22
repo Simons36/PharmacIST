@@ -28,4 +28,8 @@ export class AppConfigService {
   get accessTokenSecretPath() : string {
     return this.configService.get<string>('ACCESS_TOKEN_SECRET_PATH');
   }
+
+  get googleMapsApiKey() : string {
+    return this.configService.get<string>('GOOGLE_MAPS_API_KEY');
+  }
 }
