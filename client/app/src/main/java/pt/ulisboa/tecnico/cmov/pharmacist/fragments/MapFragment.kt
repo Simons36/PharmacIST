@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.fragments
 
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -164,11 +165,11 @@ class MapFragment : Fragment(), OnMapReadyCallback{
                 return@setOnClickListener
             } else {
                 pickedLocation?.let {
-                    val intent = Intent(requireContext(), AddPharmacyActivity::class.java).apply {
-                        putExtra("pickedLocation", it)
-                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    }
-                    startActivity(intent)
+                    val data = Intent()
+                    data.putExtra("latitude", pickedLocation!!.latitude)
+                    data.putExtra("longitude", pickedLocation!!.longitude)
+                    activity?.setResult(Activity.RESULT_OK, data)
+                    activity?.finish()
                 }
             }
         }
@@ -196,6 +197,11 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             pickedLocation = latLng
 
             checkIfPickLocationButtonShouldBeEnabled()
+        }
+
+        // When user clicks the cancel button, finish the activity
+        cancelButton.setOnClickListener {
+            requireActivity().finish()
         }
     }
 

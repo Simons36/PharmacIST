@@ -1,13 +1,12 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.dto
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto
 
 import pt.ulisboa.tecnico.cmov.pharmacist.exception.AddPharmacyMissingPropertiesException
-import kotlin.properties.Delegates
 
 class AddPharmacyDto(
     private val name: String,
     private val latitude: Double,
     private val longitude: Double,
-    private val picture : ByteArray,
+    private val picturePath : String,
     private val pictureExtension : String
 ){
     fun getName() : String {
@@ -22,8 +21,8 @@ class AddPharmacyDto(
         return longitude
     }
 
-    fun getPicture() : ByteArray {
-        return picture
+    fun getPicturePath() : String {
+        return picturePath
     }
 
     fun getPictureExtension() : String {
@@ -35,7 +34,7 @@ class AddPharmacyDtoBuilder(){
     private lateinit var name: String
     private var latitude : Double? = null
     private var longitude : Double? = null
-    private lateinit var picture : ByteArray
+    private lateinit var picturePath : String
     private lateinit var pictureExtension : String
 
     fun setName(name: String) : AddPharmacyDtoBuilder {
@@ -53,8 +52,8 @@ class AddPharmacyDtoBuilder(){
         return this
     }
 
-    fun setPicture(picture: ByteArray) : AddPharmacyDtoBuilder {
-        this.picture = picture
+    fun setPicturePath(picturePath: String) : AddPharmacyDtoBuilder {
+        this.picturePath = picturePath
         return this
     }
 
@@ -63,6 +62,28 @@ class AddPharmacyDtoBuilder(){
         return this
     }
 
+    //getters
+    fun getName() : String {
+        return name
+    }
+
+    fun getLatitude() : Double? {
+        return latitude
+    }
+
+    fun getLongitude() : Double? {
+        return longitude
+    }
+
+    fun getPicturePath() : String {
+        return picturePath
+    }
+
+    fun getPictureExtension() : String {
+        return pictureExtension
+    }
+
+
     fun build() : AddPharmacyDto {
 
         val missingProperties = ArrayList<String>()
@@ -70,13 +91,11 @@ class AddPharmacyDtoBuilder(){
         if (!this::name.isInitialized) missingProperties.add("name")
         if (latitude == null) missingProperties.add("latitude")
         if (longitude == null) missingProperties.add("longitude")
-        if (!this::picture.isInitialized) missingProperties.add("picture")
-        if (!this::pictureExtension.isInitialized) missingProperties.add("pictureExtension")
 
         if(missingProperties.isNotEmpty()){
             throw AddPharmacyMissingPropertiesException(missingProperties)
         }else{
-            return AddPharmacyDto(name, latitude!!, longitude!!, picture, pictureExtension)
+            return AddPharmacyDto(name, latitude!!, longitude!!, picturePath, pictureExtension)
         }
 
     }
