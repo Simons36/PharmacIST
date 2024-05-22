@@ -46,6 +46,8 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
     private val CAMERA_PERMISSION_CODE = 1;
 
+    private val TIME_SHOW_ADD_PHARMACY_SUCCESS: Long = 2000
+
     private lateinit var lastKnownLocation: Location;
 
     // Variables to check if the fields are populated
@@ -534,7 +536,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
         val handler = Handler()
         handler.postDelayed({ // Do something after 5s = 5000ms
             finish()
-        }, 2500)
+        }, TIME_SHOW_ADD_PHARMACY_SUCCESS)
     }
 
     private fun clearAllElements() {
