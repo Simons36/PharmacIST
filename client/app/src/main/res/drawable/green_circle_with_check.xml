@@ -1,0 +1,12 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Green circle -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#008000" /> <!-- Change color as desired -->
+        </shape>
+    </item>
+    <!-- Baseline_check_24 vector -->
+    <item
+        android:drawable="@drawable/baseline_check_24"
+        android:gravity="center" />
+</layer-list>

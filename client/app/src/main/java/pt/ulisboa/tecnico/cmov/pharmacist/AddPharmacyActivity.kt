@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
@@ -9,13 +10,20 @@ import android.location.Location
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.os.Handler
 import android.os.Parcelable
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Gravity
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,17 +32,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDtoBuilder
-import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
-import android.Manifest
-import android.provider.MediaStore
-import android.view.View
-import android.widget.ImageView
-import android.widget.RelativeLayout
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.ParmacyService
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.PharmacyServiceImpl
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDtoBuilder
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
+import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
 import java.io.IOException
+import android.widget.LinearLayout.LayoutParams
 
 
 class AddPharmacyActivity() : AppCompatActivity() {
@@ -492,7 +496,11 @@ class AddPharmacyActivity() : AppCompatActivity() {
             runOnUiThread{
                 
                 if(success){
-                    Toast.makeText(this, "Pharmacy added successfully", Toast.LENGTH_SHORT).show()
+                    onAddPharmacySuccess();
+                    val handler = Handler()
+                    handler.postDelayed({ // Do something after 5s = 5000ms
+                        finish()
+                    }, 2500)
                 }else{
                     Toast.makeText(this, "Error adding pharmacy: $message", Toast.LENGTH_SHORT).show()
                 }
@@ -500,8 +508,21 @@ class AddPharmacyActivity() : AppCompatActivity() {
             }
         }
 
-        finish()
     }
+
+    private fun onAddPharmacySuccess() {
+        // Clear all elements on the activity
+        clearAllElements()
+
+        setContentView(R.layout.activity_add_pharmacy_success)
+    }
+
+    private fun clearAllElements() {
+        // Remove all views from the main layout
+        val mainLayout = findViewById<RelativeLayout>(R.id.root_layout)
+        mainLayout.removeAllViews()
+    }
+
 
 
 
