@@ -11,7 +11,7 @@ import kotlin.concurrent.thread
 
 class PharmacyServiceImpl(private val context : Context) : ParmacyService{
 
-    override fun addPharmacy(pharmacy: AddPharmacyDto, callback: (Boolean, String?) -> Unit) {
+    override fun addPharmacy(pharmacy: AddPharmacyDto, callback: (Boolean, Exception?) -> Unit) {
         // Send the pharmacy to the server
         // If the server responds with a success, call callback(true, null)
         // If the server responds with an error, call callback(false, "Error message")
@@ -61,7 +61,7 @@ class PharmacyServiceImpl(private val context : Context) : ParmacyService{
 
                 callback(true, null)
             }catch (e: Exception){
-                callback(false, e.message)
+                callback(false, e)
                 Log.e("Pharmacy", "Error adding pharmacy: ${e.message}")
             }
         }
