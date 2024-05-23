@@ -18,10 +18,7 @@ export class Pharmacy {
     longitude: number;
 
     @Prop()
-    photo: Buffer;
-
-    @Prop()
-    photoExtension: string;
+    photoPath: string;
 }
 
 
