@@ -49,7 +49,7 @@ export class PharmacyService {
       if (error.code === 11000 || error.code === 11001) {
         throw new HttpException(
           `Pharmacy name '${pharmacyDto.name}' is already in use.`,
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.CONFLICT,
         );
       }
 
