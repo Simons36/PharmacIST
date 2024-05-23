@@ -5,6 +5,6 @@ import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 // For all operations with the server related to pharmacies
 interface ParmacyService {
 
-    fun addPharmacy(pharmacy : AddPharmacyDto, callback : (Boolean, String?) -> Unit)
+    suspend fun addPharmacy(pharmacy : AddPharmacyDto)
 
 }

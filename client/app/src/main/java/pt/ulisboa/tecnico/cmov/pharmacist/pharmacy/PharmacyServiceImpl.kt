@@ -1,70 +1,83 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy
 
 import android.content.Context
-import android.util.Log
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.logging.Logging
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.serialization.json.Json
+import io.ktor.serialization.kotlinx.json.*
+
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
+import java.io.File
 import java.net.HttpURLConnection
-import java.net.URL
 import kotlin.concurrent.thread
 
 class PharmacyServiceImpl(private val context : Context) : ParmacyService{
 
-    override fun addPharmacy(pharmacy: AddPharmacyDto, callback: (Boolean, String?) -> Unit) {
+    private val httpClient = HttpClient(Android) {
+        install(Logging)
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                isLenient = true
+                ignoreUnknownKeys = true
+            })
+        }
+    }
+
+    override suspend fun addPharmacy(pharmacy: AddPharmacyDto){
         // Send the pharmacy to the server
         // If the server responds with a success, call callback(true, null)
         // If the server responds with an error, call callback(false, "Error message")
-        thread{
-            val apiUrl: String = ConfigClass.getUrl(context)
-            val addPharmacyUrl = "$apiUrl/pharmacy/add"
 
-            try {
-                val url = URL(addPharmacyUrl)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.doOutput = true
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val addPharmacyUrl = "$apiUrl/pharmacy/add"
 
-                // Set request headers (optional)login
-                connection.setRequestProperty("Content-Type", "application/json")
+        val response : HttpResponse = this.httpClient.post(addPharmacyUrl){
+            contentType(ContentType.Application.Json)
+            if(pharmacy.getPicturePath() != null){
 
-                // Construct the request body as JSON
-                val requestBody = "{\"name\": \"${pharmacy.getName()}\", \"latitude\": ${pharmacy.getLatitude()}, " +
-                        "\"longitude\": ${pharmacy.getLongitude()}, \"picturePath\": \"${pharmacy.getPicturePath()}\", " +
-                        "\"pictureExtension\": \"${pharmacy.getPictureExtension()}\"}"
+                setBody(MultiPartFormDataContent(
+                    formData {
+                        append("photo", File(pharmacy.getPicturePath()!!).readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, ContentType.Image.PNG.toString())
+                            append(HttpHeaders.ContentDisposition, "filename=\"${pharmacy.getName()}.png\"")
+                        })
+                        append("name", pharmacy.getName())
+                        append("latitude", pharmacy.getLatitude().toString())
+                        append("longitude", pharmacy.getLongitude().toString())
+                    },
 
-                val outputStream = connection.outputStream
-                outputStream.write(requestBody.toByteArray(Charsets.UTF_8))
-                outputStream.close()
-
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_CREATED) {
-                    // Read and handle successful response
-                    val inputStream = connection.inputStream
-                    val responseBody = inputStream.bufferedReader().use { it.readText() }
-                    Log.d("Pharmacy", "Pharmacy added successfully: $responseBody")
-                    inputStream.close()
-                } else {
-                    // Handle error response
-                    val errorStream = connection.errorStream
-                    val errorBody = errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                    Log.e("Pharmacy", "Error adding pharmacy with HTTP status code: $responseCode. Error body: $errorBody")
-                    errorStream?.close()
-
-                    if(responseCode == HttpURLConnection.HTTP_BAD_REQUEST){
-                        throw PharmacyNameAlreadyInUse(pharmacy.getName())
-                    }else{
-                        throw RuntimeException("Error adding pharmacy: $errorBody")
-                    }
-                }
-
-
-                callback(true, null)
-            }catch (e: Exception){
-                callback(false, e.message)
-                Log.e("Pharmacy", "Error adding pharmacy: ${e.message}")
+                ))
+            }else{
+                setBody(pharmacy)
             }
         }
+
+        //execute removal of picture in a separate thread
+        thread {
+            if(pharmacy.getPicturePath() != null){
+                val file = File(pharmacy.getPicturePath()!!)
+                file.delete()
+            }
+        }
+
+        // 201 Created -> means success
+        // 409 Conflict -> means the name is already in use
+        if(response.status.value == HttpURLConnection.HTTP_CONFLICT){
+            throw PharmacyNameAlreadyInUse(pharmacy.getName())
+        }else if(response.status.value != HttpURLConnection.HTTP_CREATED){
+            throw RuntimeException("Error adding pharmacy: ${response.bodyAsText()}")
+        }
+
     }
 
 }

@@ -11,7 +11,7 @@ export class PharmacyDto {
     readonly latitude: number;
     @IsNotEmpty()
     readonly longitude: number;
-    
-    readonly photo : Uint8Array;
-    readonly photoExtension : string;
+
+    readonly photoPath: string;
+
 }

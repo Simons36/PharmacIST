@@ -1,21 +1,20 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.util
 
-import android.R
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.widget.ImageView
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
 
 
 class UtilFunctions {
@@ -43,18 +42,19 @@ class UtilFunctions {
             var fos: FileOutputStream? = null
             try {
                 fos = FileOutputStream(myPath)
-                // Use the compress method on the BitMap object to write image to the OutputStream
+                // save image to the directory
                 bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos)
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
                 try {
-                    fos!!.close()
+                    fos!!.flush()
+                    fos.close()
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
             }
-            return directory.absolutePath
+            return directory.absolutePath + "/" + imageFilename
         }
 
 //        private fun loadImageFromStorage(path: String, filename : String, activity: Activity) {
@@ -67,6 +67,68 @@ class UtilFunctions {
 //                e.printStackTrace()
 //            }
 //        }
+
+        fun sendHttpRequest(
+            providedUrl: String,
+            requestMethod: String,
+            requestBodyArgs: Map<String, String>,
+            httpSuccessCode: Int,
+            callback: (Boolean, Int?, String) -> Unit
+        ) {
+            thread {
+                try {
+                    val url = URL(providedUrl)
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = requestMethod
+                    connection.doOutput = true
+
+                    // Set request headers (optional)
+                    connection.setRequestProperty("Content-Type", "application/json")
+
+                    // Construct the request body as JSON
+                    var requestBody = "{"
+                    for ((key, value) in requestBodyArgs) {
+                        if(key == "picturePath"){
+                            val file = File(value)
+                            val fileInputStream = file.inputStream()
+                            val fileData = fileInputStream.readBytes()
+                            connection.setRequestProperty("Content-Type", "application/octet-stream")
+                            connection.setRequestProperty("Content-Length", fileData.size.toString())
+                            connection.outputStream.write(fileData)
+                            fileInputStream.close()
+                            continue
+
+                        }
+                        requestBody += "\"$key\": \"$value\", "
+                    }
+                    requestBody = requestBody.dropLast(2) + "}"
+
+                    val outputStream = connection.outputStream
+                    outputStream.write(requestBody.toByteArray(Charsets.UTF_8))
+                    outputStream.close()
+
+                    val responseCode = connection.responseCode
+                    if (responseCode == httpSuccessCode) {
+                        // Read and handle successful response
+                        val inputStream = connection.inputStream
+                        val responseBody = inputStream.bufferedReader().use { it.readText() }
+                        callback(true, responseCode, responseBody)
+                        inputStream.close()
+                    } else {
+                        // Handle error response
+                        val errorStream = connection.errorStream
+                        val errorBody = errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                        callback(false, responseCode, errorBody)
+                        errorStream?.close()
+                    }
+
+                    connection.disconnect()
+                } catch (e: Exception) {
+                    callback(false, null, e.message!!)
+                }
+            }
+        }
+
     }
 
 }

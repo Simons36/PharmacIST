@@ -1,14 +1,17 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto
 
+import kotlinx.serialization.Serializable
 import pt.ulisboa.tecnico.cmov.pharmacist.exception.AddPharmacyMissingPropertiesException
 
+@Serializable
 class AddPharmacyDto(
     private val name: String,
     private val latitude: Double,
     private val longitude: Double,
-    private val picturePath : String,
-    private val pictureExtension : String
+    private val picturePath : String?,
+    private val pictureExtension : String?
 ){
+
     fun getName() : String {
         return name
     }
@@ -21,11 +24,11 @@ class AddPharmacyDto(
         return longitude
     }
 
-    fun getPicturePath() : String {
+    fun getPicturePath() : String? {
         return picturePath
     }
 
-    fun getPictureExtension() : String {
+    fun getPictureExtension() : String? {
         return pictureExtension
     }
 }
@@ -34,8 +37,8 @@ class AddPharmacyDtoBuilder(){
     private lateinit var name: String
     private var latitude : Double? = null
     private var longitude : Double? = null
-    private lateinit var picturePath : String
-    private lateinit var pictureExtension : String
+    private var picturePath : String? = null
+    private var pictureExtension : String? = null
 
     fun setName(name: String) : AddPharmacyDtoBuilder {
         this.name = name
@@ -75,11 +78,11 @@ class AddPharmacyDtoBuilder(){
         return longitude
     }
 
-    fun getPicturePath() : String {
+    fun getPicturePath() : String? {
         return picturePath
     }
 
-    fun getPictureExtension() : String {
+    fun getPictureExtension() : String? {
         return pictureExtension
     }
 
