@@ -1,7 +1,9 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto
 
+import kotlinx.serialization.Serializable
 import pt.ulisboa.tecnico.cmov.pharmacist.exception.AddPharmacyMissingPropertiesException
 
+@Serializable
 class AddPharmacyDto(
     private val name: String,
     private val latitude: Double,

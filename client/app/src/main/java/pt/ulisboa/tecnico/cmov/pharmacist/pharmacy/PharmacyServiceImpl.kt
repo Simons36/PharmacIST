@@ -1,51 +1,82 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy
 
 import android.content.Context
-import android.util.Log
-import com.google.android.gms.maps.OnMapReadyCallback
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.logging.Logging
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
-import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.serialization.json.Json
+import io.ktor.serialization.kotlinx.json.*
+
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
+import java.io.File
 import java.net.HttpURLConnection
+import kotlin.concurrent.thread
 
 class PharmacyServiceImpl(private val context : Context) : ParmacyService{
 
-    override fun addPharmacy(pharmacy: AddPharmacyDto, callback : (Boolean, Exception?) -> Unit)  {
+    private val httpClient = HttpClient(Android) {
+        install(Logging)
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                isLenient = true
+                ignoreUnknownKeys = true
+            })
+        }
+    }
+
+    override suspend fun addPharmacy(pharmacy: AddPharmacyDto){
         // Send the pharmacy to the server
         // If the server responds with a success, call callback(true, null)
         // If the server responds with an error, call callback(false, "Error message")
+
         val apiUrl: String = ConfigClass.getUrl(context)
         val addPharmacyUrl = "$apiUrl/pharmacy/add"
 
-        val argumentsMap = mutableMapOf<String, String>(
-            "name" to pharmacy.getName(),
-            "latitude" to pharmacy.getLatitude().toString(),
-            "longitude" to pharmacy.getLongitude().toString()
-        )
+        val response : HttpResponse = this.httpClient.post(addPharmacyUrl){
+            contentType(ContentType.Application.Json)
+            if(pharmacy.getPicturePath() != null){
 
-        if (pharmacy.getPicturePath() != null) {
-            argumentsMap["picturePath"] = pharmacy.getPicturePath()!!
-        }
-        if (pharmacy.getPictureExtension() != null) {
-            argumentsMap["pictureExtension"] = pharmacy.getPictureExtension()!!
-        }
+                setBody(MultiPartFormDataContent(
+                    formData {
+                        append("photo", File(pharmacy.getPicturePath()!!).readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, ContentType.Image.PNG.toString())
+                            append(HttpHeaders.ContentDisposition, "filename=\"${pharmacy.getName()}.png\"")
+                        })
+                        append("name", pharmacy.getName())
+                        append("latitude", pharmacy.getLatitude().toString())
+                        append("longitude", pharmacy.getLongitude().toString())
+                    },
 
-
-        UtilFunctions.sendHttpRequest(addPharmacyUrl, "POST", argumentsMap, HttpURLConnection.HTTP_CREATED) { success, responseCode, responseBodyOrExceptionMessage ->
-            if(success){
-                Log.d("Pharmacy", "Pharmacy added successfully: $responseBodyOrExceptionMessage")
-                callback(true, null)
+                ))
             }else{
-                Log.e("Pharmacy", "Error adding pharmacy with HTTP status code: $responseCode. Error body: $responseBodyOrExceptionMessage")
-                if(responseCode == HttpURLConnection.HTTP_CONFLICT){
-                    callback(false, PharmacyNameAlreadyInUse(pharmacy.getName()))
-                }else{
-                    callback(false, RuntimeException("Error adding pharmacy: $responseBodyOrExceptionMessage"))
-                }
+                setBody(pharmacy)
             }
         }
 
+        //execute removal of picture in a separate thread
+        thread {
+            if(pharmacy.getPicturePath() != null){
+                val file = File(pharmacy.getPicturePath()!!)
+                file.delete()
+            }
+        }
+
+        // 201 Created -> means success
+        // 409 Conflict -> means the name is already in use
+        if(response.status.value == HttpURLConnection.HTTP_CONFLICT){
+            throw PharmacyNameAlreadyInUse(pharmacy.getName())
+        }else if(response.status.value != HttpURLConnection.HTTP_CREATED){
+            throw RuntimeException("Error adding pharmacy: ${response.bodyAsText()}")
+        }
 
     }
 

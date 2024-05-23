@@ -16,14 +16,12 @@ import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,14 +29,15 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.ParmacyService
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.PharmacyServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDtoBuilder
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
 import java.io.IOException
-import android.widget.LinearLayout.LayoutParams
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 
 
@@ -491,40 +490,37 @@ class AddPharmacyActivity() : AppCompatActivity() {
         picturePopulated = false
     }
 
-    private fun addPharmacyAndFinish(){
-        //add name to dto
+
+    private fun addPharmacyAndFinish() {
+        // Add name to DTO
         addPharmacyDtoBuilder.setName(pharmacyNameEditText.text.toString())
         Log.i("DEBUG", addPharmacyDtoBuilder.toString())
-        pharmacyService.addPharmacy(addPharmacyDtoBuilder.build()){
-            success, exception ->
-            runOnUiThread{
-                
-                if(success){
-                    onAddPharmacySuccess();
 
-                }else{
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Error")
-                    builder.setMessage(exception?.message)
+        // Launch a coroutine to call the suspend function
+        lifecycleScope.launch {
+            try {
+                pharmacyService.addPharmacy(addPharmacyDtoBuilder.build())
 
-                    builder.setPositiveButton("Ok") { dialog, _ ->
-
-
-                        dialog.dismiss()
-                        if(exception is PharmacyNameAlreadyInUse){
-                            pharmacyNameEditText.error = "Pharmacy name already in use"
-                        }
-                    }
-
-                    val dialog: AlertDialog = builder.create()
-                    dialog.show()
-
-
+                runOnUiThread {
+                        onAddPharmacySuccess()
                 }
 
+            } catch (exception: Exception) {
+                val builder = AlertDialog.Builder(this@AddPharmacyActivity)
+                builder.setTitle("Error")
+                builder.setMessage(exception.message)
+
+                builder.setPositiveButton("Ok") { dialog, _ ->
+                    dialog.dismiss()
+                    if(exception is PharmacyNameAlreadyInUse){
+                        pharmacyNameEditText.error = "Pharmacy name already in use"
+                    }
+                }
+
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
             }
         }
-
     }
 
     private fun onAddPharmacySuccess() {

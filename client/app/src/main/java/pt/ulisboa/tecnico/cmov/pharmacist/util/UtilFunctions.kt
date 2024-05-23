@@ -42,18 +42,19 @@ class UtilFunctions {
             var fos: FileOutputStream? = null
             try {
                 fos = FileOutputStream(myPath)
-                // Use the compress method on the BitMap object to write image to the OutputStream
+                // save image to the directory
                 bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos)
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
                 try {
-                    fos!!.close()
+                    fos!!.flush()
+                    fos.close()
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
             }
-            return directory.absolutePath
+            return directory.absolutePath + "/" + imageFilename
         }
 
 //        private fun loadImageFromStorage(path: String, filename : String, activity: Activity) {
@@ -87,6 +88,17 @@ class UtilFunctions {
                     // Construct the request body as JSON
                     var requestBody = "{"
                     for ((key, value) in requestBodyArgs) {
+                        if(key == "picturePath"){
+                            val file = File(value)
+                            val fileInputStream = file.inputStream()
+                            val fileData = fileInputStream.readBytes()
+                            connection.setRequestProperty("Content-Type", "application/octet-stream")
+                            connection.setRequestProperty("Content-Length", fileData.size.toString())
+                            connection.outputStream.write(fileData)
+                            fileInputStream.close()
+                            continue
+
+                        }
                         requestBody += "\"$key\": \"$value\", "
                     }
                     requestBody = requestBody.dropLast(2) + "}"
