@@ -37,4 +37,13 @@ public class ConfigClass {
         return null;
     }
 
+    public static String getValueFromAndroidManifest(Context context, String name) {
+        try {
+            return context.getPackageManager().getApplicationInfo(context.getPackageName(), 128).metaData.getString(name);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get value from AndroidManifest: " + e.getMessage());
+        }
+        return null;
+    }
+
 }

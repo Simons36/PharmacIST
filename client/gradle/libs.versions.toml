@@ -1,5 +1,7 @@
 [versions]
 agp = "8.3.2"
+googlePlacesAutocompleteEdittext = "0.0.8"
+googlePlacesAutocompleteEdittextVersion = "1.0.2"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -13,6 +15,7 @@ logbackClassic = "1.2.3"
 material = "1.12.0"
 activity = "1.9.0"
 constraintlayout = "2.1.4"
+places = "3.4.0"
 playServicesMaps = "18.2.0"
 playServicesLocation = "21.2.0"
 
@@ -33,8 +36,10 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+my-edit-text = { module = "com.github.Simons36:Google-Places-AutoComplete-EditText", version.ref = "googlePlacesAutocompleteEdittextVersion" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

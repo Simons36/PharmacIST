@@ -1,6 +1,9 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PharmacyDto } from './dto/pharmacy.dto';
-import { getAddressFromCoordinates } from './util/pharmacy.util';
+import {
+  getAddressFromCoordinates,
+  getCoordinatesFromAddress,
+} from './util/pharmacy.util';
 import { AppConfigService } from 'src/config/app-config.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pharmacy, PharmacyDocument } from './schemas/pharmacy.schema';
@@ -20,13 +23,17 @@ export class PharmacyService {
    * Adds new pharmacy to the database
    * @param pharmacyDto
    */
-  async addNewPharmacy(pharmacyDto: PharmacyDto, photo: Express.Multer.File | undefined) {
-
+  async addNewPharmacy(
+    pharmacyDto: PharmacyDto,
+    photo: Express.Multer.File | undefined,
+  ) {
     console.log('Received photo:', photo);
 
     // Log the request
     this.logger.log(
-      'Received request to add new pharmacy with name ' + pharmacyDto.name + '.',
+      'Received request to add new pharmacy with name ' +
+        pharmacyDto.name +
+        '.',
     );
 
     // If address is not provided, get the address from the coordinates
@@ -41,28 +48,48 @@ export class PharmacyService {
       } catch (error) {
         // Unable to get address from coordinates, leave it empty
       }
+    } else if (!pharmacyDto.latitude || !pharmacyDto.longitude) {
+      // If address is provided but coordinates are not
+      try {
+        const coordinates = await getCoordinatesFromAddress(
+          pharmacyDto.address,
+          this.configService.googleMapsApiKey,
+        );
+        pharmacyDto = {
+          ...pharmacyDto,
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+        };
+      } catch (error) {
+        // if unable to get coordinates from address, it means that address is invalid
+        throw new HttpException(
+          'Invalid address provided.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
-    
-    
     //if photo is not undefined
     if (photo) {
       const photoPath = this.configService.photosPath;
-  
+
       //Create path if it does not exist
       const fs = require('fs');
-      if (!fs.existsSync(photoPath)){
+      if (!fs.existsSync(photoPath)) {
         fs.mkdirSync(photoPath);
       }
 
       try {
-        const photoFilename = pharmacyDto.name + '.' + photo.mimetype.split('/')[1];
+        const photoFilename =
+          pharmacyDto.name + '.' + photo.mimetype.split('/')[1];
 
         // Write the photo data to a file
         fs.writeFileSync(`${photoPath}/${photoFilename}`, photo.buffer);
 
-        pharmacyDto = { ...pharmacyDto, photoPath: `${photoPath}/${photoFilename}` };
-
+        pharmacyDto = {
+          ...pharmacyDto,
+          photoPath: `${photoPath}/${photoFilename}`,
+        };
       } catch (error) {
         this.logger.log('Error while saving photo: ' + error.message);
         throw new HttpException(

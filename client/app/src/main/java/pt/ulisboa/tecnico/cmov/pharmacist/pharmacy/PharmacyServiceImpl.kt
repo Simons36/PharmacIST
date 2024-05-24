@@ -52,21 +52,19 @@ class PharmacyServiceImpl(private val context : Context) : ParmacyService{
                             append(HttpHeaders.ContentDisposition, "filename=\"${pharmacy.getName()}.png\"")
                         })
                         append("name", pharmacy.getName())
-                        append("latitude", pharmacy.getLatitude().toString())
-                        append("longitude", pharmacy.getLongitude().toString())
+
+                        if(pharmacy.getAddress() != null){
+                            append("address", pharmacy.getAddress()!!)
+                        }else{
+                            append("latitude", pharmacy.getLatitude()!!)
+                            append("longitude", pharmacy.getLongitude()!!)
+                        }
+
                     },
 
                 ))
             }else{
                 setBody(pharmacy)
-            }
-        }
-
-        //execute removal of picture in a separate thread
-        thread {
-            if(pharmacy.getPicturePath() != null){
-                val file = File(pharmacy.getPicturePath()!!)
-                file.delete()
             }
         }
 
