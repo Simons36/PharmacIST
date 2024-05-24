@@ -17,6 +17,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -30,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.ParmacyService
@@ -39,6 +42,11 @@ import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
 import java.io.IOException
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
+import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.PlaceAPI
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.adapter.PlacesAutoCompleteAdapter
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.model.Place
+import java.io.File
 
 
 class AddPharmacyActivity() : AppCompatActivity() {
@@ -64,7 +72,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
     private lateinit var confirmButton : Button
     private lateinit var cancelButton : Button
     private lateinit var pharmacyNameEditText : EditText
-    private lateinit var addressEditText : EditText
+    private lateinit var addressEditText : AutoCompleteTextView
     private lateinit var setAddressToCurrentLocationButton : FloatingActionButton
     private lateinit var pickAddressFromMapButton : FloatingActionButton
     private lateinit var takePictureButton: Button
@@ -82,6 +90,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
     //Service to communicate with the server
     private lateinit var pharmacyService : ParmacyService
+
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -107,6 +116,8 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
         // Init buttons, edit texts, etc.
         initWidgets()
+
+
 
 
         //Init the service
@@ -345,7 +356,19 @@ class AddPharmacyActivity() : AppCompatActivity() {
     }
 
     private fun initAddressEditText(){
-        addressEditText = findViewById<EditText>(R.id.editTextAddress)
+        addressEditText = findViewById<AutoCompleteTextView>(R.id.editTextAddress)
+        val placesApi = PlaceAPI.Builder().apiKey(ConfigClass.getValueFromAndroidManifest(this, "com.google.android.geo.API_KEY")).build(this)
+        placesApi.locationBiasLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
+        placesApi.locationBiasRadius = 100000 // 100 km
+        addressEditText.setAdapter(PlacesAutoCompleteAdapter(this, placesApi))
+
+        addressEditText.onItemClickListener =
+            AdapterView.OnItemClickListener { parent, _, position, _ ->
+                val place = parent.getItemAtPosition(position) as Place
+                addressEditText.setText(place.description)
+            }
+
+
         addressEditText.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 if (s.toString().trim { it <= ' ' }.isEmpty()) {
@@ -379,6 +402,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
     }
 
     private fun switchBehaviorOfPickAddressFromMapButton(){
+        Log.i("DEBUG", "Switching behavior of pick address from map button")
         pickAddressFromMapButton.setImageResource(R.drawable.baseline_close_24)
         pickAddressFromMapButton.backgroundTintList = resources.getColorStateList(com.google.android.material.R.color.mtrl_btn_transparent_bg_color)
         pickAddressFromMapButton.setOnClickListener {
@@ -494,6 +518,9 @@ class AddPharmacyActivity() : AppCompatActivity() {
     private fun addPharmacyAndFinish() {
         // Add name to DTO
         addPharmacyDtoBuilder.setName(pharmacyNameEditText.text.toString())
+        if(addPharmacyDtoBuilder.getLatitude() == null || addPharmacyDtoBuilder.getLongitude() == null){
+            addPharmacyDtoBuilder.setAddress(addressEditText.text.toString())
+        }
         Log.i("DEBUG", addPharmacyDtoBuilder.toString())
 
         // Launch a coroutine to call the suspend function
@@ -506,6 +533,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
                 }
 
             } catch (exception: Exception) {
+                Log.i("DEBUG", exception.stackTraceToString())
                 val builder = AlertDialog.Builder(this@AddPharmacyActivity)
                 builder.setTitle("Error")
                 builder.setMessage(exception.message)
@@ -529,6 +557,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
         setContentView(R.layout.activity_add_pharmacy_success)
 
+
         val handler = Handler()
         handler.postDelayed({ // Do something after 5s = 5000ms
             finish()
@@ -539,6 +568,21 @@ class AddPharmacyActivity() : AppCompatActivity() {
         // Remove all views from the main layout
         val mainLayout = findViewById<RelativeLayout>(R.id.root_layout)
         mainLayout.removeAllViews()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // eliminate photo, if it exists
+        try {
+
+            if(addPharmacyDtoBuilder.getPicturePath() != null){
+                val file = File(addPharmacyDtoBuilder.getPicturePath()!!)
+                file.delete()
+            }
+
+        }catch (e: Exception){
+            Log.i("DEBUG", e.stackTraceToString())
+        }
     }
 
 
