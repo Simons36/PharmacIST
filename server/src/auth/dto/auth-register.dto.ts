@@ -15,13 +15,3 @@ export class AuthRegisterDto{
     @IsNotEmpty()
     readonly password : string;
 }
-
-export function ConvertRegisterDtoToCreateUserDto(authRegisterDto : AuthRegisterDto, passwordHash :  string){
-    const createUserDto : CreateUserDto = {
-        username : authRegisterDto.username,
-        email : authRegisterDto.email,
-        password : passwordHash
-    };
-
-    return createUserDto;
-}
