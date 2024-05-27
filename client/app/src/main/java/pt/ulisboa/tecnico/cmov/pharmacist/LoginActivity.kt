@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.AuthenticationServiceImpl
@@ -14,8 +15,6 @@ import kotlin.concurrent.thread
 
 
 class LoginActivity : AppCompatActivity() {
-
-    private lateinit var auth: AuthenticationServiceImpl // Declare a property to hold the Auth instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,11 +42,9 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Class to handle authentication operations (login, register, logout)
-            auth = AuthenticationServiceImpl(applicationContext);
 
 
-            auth.login(email, password) { success, errorMessage ->
+            AuthenticationServiceImpl.login(email, password, applicationContext) { success, errorMessage ->
                 if (success) {
                     // Login successful, navigate to MainMenuActivity
                     val intent = Intent(this@LoginActivity, MainMenuActivity::class.java)
@@ -65,7 +62,16 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
 
+        }
 
+        // Setup register button click listener
+        val registerTextView = findViewById<TextView>(R.id.textViewGoToRegister)
+
+        registerTextView.setOnClickListener {
+            // Handle register button click
+            // Navigate to RegisterActivity
+            val intent = Intent(this@LoginActivity, RegisterActivity::class.java)
+            startActivity(intent)
         }
     }
 }
