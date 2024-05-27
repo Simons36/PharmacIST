@@ -77,19 +77,23 @@ export class AuthService {
 
   logout() {}
 
-  async register(registerDto: AuthRegisterDto) {
+  async register(registerDto: AuthRegisterDto) : Promise<void>{
     try {
       // Hash password
       const passwordHash = await argon.hash(registerDto.password);
 
       // Call userService.createUser with the createUserDto
-      return await this.userService.createUser({
+      await this.userService.createUser({
         email: registerDto.email,
         username: registerDto.username,
         password: passwordHash,
       });
     } catch (error) {
-      throw new HttpException('Registration failed', HttpStatus.BAD_REQUEST);
+      if(error instanceof HttpException){
+        throw error;
+      } else {
+        throw new HttpException(`Registration failed: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
   }
 }

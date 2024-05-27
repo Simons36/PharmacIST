@@ -11,33 +11,35 @@ export class UserService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-
   // called on register
-  async createUser(createUserDto: CreateUserDto): Promise<UserDto> {
+  async createUser(createUserDto: CreateUserDto): Promise<void> {
     try {
       const newUser = new this.userModel(createUserDto);
       const savedUser = await newUser.save();
-      
-      const returnedDto : UserDto = {
-        username : savedUser.username,
-        email : savedUser.email,
-        password : savedUser.password
+
+      const returnedDto: UserDto = {
+        username: savedUser.username,
+        email: savedUser.email,
+        password: savedUser.password,
       };
-
-      return returnedDto;
-
     } catch (error) {
       if (error.code === 11000 || error.code === 11001) {
         // Duplicate key error (MongoDB error code for duplicate key)
         if (error.keyPattern.email) {
           throw new HttpException(
-            `'${createUserDto.email}' is already in use.`,
-            HttpStatus.BAD_REQUEST,
+            {
+              message: `'${createUserDto.email}' is already in use.`,
+              field: 'email',
+            },
+            HttpStatus.CONFLICT,
           );
         } else if (error.keyPattern.username) {
           throw new HttpException(
-            `'${createUserDto.username}' is already in use.`,
-            HttpStatus.BAD_REQUEST,
+            {
+              message: `'${createUserDto.username}' is already in use.`,
+              field: 'username',
+            },
+            HttpStatus.CONFLICT,
           );
         } else {
           throw new Error('Duplicate key error');
@@ -47,9 +49,8 @@ export class UserService {
     }
   }
 
-  async findUser(email : string): Promise<UserDto> {
+  async findUser(email: string): Promise<UserDto> {
     try {
-
       // Find user by email
       const user = await this.userModel.findOne({ email }).exec();
 
@@ -61,7 +62,7 @@ export class UserService {
       const userDto: UserDto = {
         username: user.username,
         email: user.email,
-        password : user.password
+        password: user.password,
         // Add other properties from user as needed
       };
 
