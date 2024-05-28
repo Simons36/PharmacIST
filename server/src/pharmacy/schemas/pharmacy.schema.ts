@@ -15,7 +15,7 @@ export class Pharmacy {
 
   @Prop({ required: true })
   longitude: number;
-
+  
   @Prop()
   photoPath: string;
 }
