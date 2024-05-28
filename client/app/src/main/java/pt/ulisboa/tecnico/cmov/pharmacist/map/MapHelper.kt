@@ -57,5 +57,10 @@ class MapHelper(private val context: Context, private val googleMap: GoogleMap, 
         defaultMarkersMap[id]?.position = latLng
     }
 
+    fun removeDefaultMarker(id: String) {
+        defaultMarkersMap[id]?.remove()
+        defaultMarkersMap.remove(id)
+    }
+
     // Add more map-related functions as needed...
 }

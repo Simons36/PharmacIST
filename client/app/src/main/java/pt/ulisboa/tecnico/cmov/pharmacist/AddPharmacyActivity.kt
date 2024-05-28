@@ -88,9 +88,6 @@ class AddPharmacyActivity() : AppCompatActivity() {
     // To pick image from gallery
     private lateinit var galleryLauncher: ActivityResultLauncher<Intent>
 
-    //Service to communicate with the server
-    private lateinit var pharmacyService : ParmacyService
-
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -117,11 +114,6 @@ class AddPharmacyActivity() : AppCompatActivity() {
         // Init buttons, edit texts, etc.
         initWidgets()
 
-
-
-
-        //Init the service
-        pharmacyService = PharmacyServiceImpl(this)
     }
 
     private fun initWidgets(){
@@ -526,7 +518,7 @@ class AddPharmacyActivity() : AppCompatActivity() {
         // Launch a coroutine to call the suspend function
         lifecycleScope.launch {
             try {
-                pharmacyService.addPharmacy(addPharmacyDtoBuilder.build())
+                PharmacyServiceImpl.addPharmacy(addPharmacyDtoBuilder.build(), applicationContext)
 
                 runOnUiThread {
                         onAddPharmacySuccess()
@@ -584,8 +576,6 @@ class AddPharmacyActivity() : AppCompatActivity() {
             Log.i("DEBUG", e.stackTraceToString())
         }
     }
-
-
 
 
 

@@ -55,6 +55,9 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.logback.classic)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.sqlite)
+    implementation(libs.androidx.sqlite.framework)
+    implementation(libs.androidx.sqlite.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -63,6 +66,7 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.places)
+    implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
 }

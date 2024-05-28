@@ -11,13 +11,18 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.service.PharmacyInfoDbServiceImpl
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
 
 class MapFragment : Fragment(), OnMapReadyCallback{
@@ -84,6 +89,8 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         locationService = LocationService(requireActivity(), mapHelper, this)
 
         setupMap()
+
+        updatePharmacies()
 
     }
 
@@ -213,6 +220,42 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             pickLocationButton.isActivated = false
             pickLocationButton.backgroundTintList = resources.getColorStateList(android.R.color.darker_gray)
         }
+    }
+
+    private fun updatePharmacies(){
+        var removeAndAddPair : Pair<List<PharmacyDto>, List<PharmacyDto>>? = null
+
+        lifecycleScope.launch {
+
+            try {
+                removeAndAddPair = PharmacyServiceImpl.updatePharmacyInfo(PharmacyInfoDbServiceImpl.getCachedPharmaciesInfo(requireContext()), requireContext())
+            }catch (e : RuntimeException){
+                Toast.makeText(requireContext(), "Error updating pharmacies, you might be seeing outdated results", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+        }
+
+        if(removeAndAddPair == null){
+            Toast.makeText(requireContext(), "Error updating pharmacies, you might be seeing outdated results", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val removeList = removeAndAddPair!!.first
+        val addList = removeAndAddPair!!.second
+
+        // Update map and cache
+        for(pharmacy in removeList){
+            mapHelper.removeDefaultMarker(pharmacy.name)
+            PharmacyInfoDbServiceImpl.removePharmacyInfoFromCache(pharmacy, requireContext())
+        }
+
+        for(pharmacy in addList){
+            mapHelper.addDefaultMarker(LatLng(pharmacy.latitude, pharmacy.longitude), pharmacy.name, pharmacy.name)
+            PharmacyInfoDbServiceImpl.addPharmacyInfoToCache(pharmacy, requireContext())
+        }
+
+
     }
 
     companion object{

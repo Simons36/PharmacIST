@@ -15,11 +15,13 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import java.io.File
 import java.net.HttpURLConnection
 
-class PharmacyServiceImpl(private val context : Context) : ParmacyService {
+object PharmacyServiceImpl : ParmacyService {
 
     private val httpClient = HttpClient(Android) {
         install(Logging)
@@ -32,7 +34,7 @@ class PharmacyServiceImpl(private val context : Context) : ParmacyService {
         }
     }
 
-    override suspend fun addPharmacy(pharmacy: AddPharmacyDto){
+    override suspend fun addPharmacy(pharmacy: AddPharmacyDto, context: Context){
         // Send the pharmacy to the server
         // If the server responds with a success, call callback(true, null)
         // If the server responds with an error, call callback(false, "Error message")
@@ -74,6 +76,33 @@ class PharmacyServiceImpl(private val context : Context) : ParmacyService {
         }else if(response.status.value != HttpURLConnection.HTTP_CREATED){
             throw RuntimeException("Error adding pharmacy: ${response.bodyAsText()}")
         }
+
+    }
+
+
+    override suspend fun updatePharmacyInfo(pharmaciesList: List<PharmacyDto>, context: Context) : Pair<List<PharmacyDto>, List<PharmacyDto>>{
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val updatePharmaciesStatusUrl = "$apiUrl/pharmacy/updateStatus"
+
+        val response : HttpResponse = this.httpClient.post(updatePharmaciesStatusUrl){
+            contentType(ContentType.Application.Json)
+            setBody(pharmaciesList)
+        }
+
+        // server will response with two lists: one list for remove (pharmacies to remove)
+        // and another list for add (pharmacies to add)
+
+        if(response.status.value != HttpURLConnection.HTTP_OK){
+            throw RuntimeException("Error updating pharmacies status: ${response.bodyAsText()}")
+        }
+
+        val jsonResponse = response.bodyAsText()
+        val statusResponse: UpdatePharmaciesStatusResponse = Json.decodeFromString(jsonResponse)
+
+        val removeList = statusResponse.remove
+        val addList = statusResponse.add
+
+        return Pair(removeList, addList)
 
     }
 
