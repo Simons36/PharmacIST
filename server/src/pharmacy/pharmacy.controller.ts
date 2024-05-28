@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PharmacyDto } from './dto/pharmacy.dto';
 import { PharmacyService } from './pharmacy.service';
@@ -23,5 +32,15 @@ export class PharmacyController {
   @Get('all')
   async getAllPharmacies() {
     return await this.pharmacyService.getAllPharmacies();
+  }
+
+  @Get('get-update')
+  async getUpdatedPharmaciesInfo(@Body() pharmaciesDto: PharmacyDto[]) {
+    return await this.pharmacyService.getUpdatedPharmaciesInfo(pharmaciesDto);
+  }
+
+  @Get('sync/version/:version')
+  async getPharmaciesByVersion(@Param('version') version: number) {
+    return await this.pharmacyService.getPharmacySyncByVersion(version);
   }
 }

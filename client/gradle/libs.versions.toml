@@ -18,9 +18,14 @@ constraintlayout = "2.1.4"
 places = "3.4.0"
 playServicesMaps = "18.2.0"
 playServicesLocation = "21.2.0"
+sqliteKtx = "2.4.0"
+roomKtx = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-sqlite = { module = "androidx.sqlite:sqlite", version.ref = "sqliteKtx" }
+androidx-sqlite-framework = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqliteKtx" }
+androidx-sqlite-ktx = { module = "androidx.sqlite:sqlite-ktx", version.ref = "sqliteKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -40,6 +45,7 @@ places = { module = "com.google.android.libraries.places:places", version.ref = 
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 my-edit-text = { module = "com.github.Simons36:Google-Places-AutoComplete-EditText", version.ref = "googlePlacesAutocompleteEdittextVersion" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
