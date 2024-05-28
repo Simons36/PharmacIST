@@ -4,23 +4,21 @@ export type PharmacyDocument = Pharmacy & Document;
 
 @Schema()
 export class Pharmacy {
+  @Prop({ required: true, unique: true })
+  name: string;
 
-    @Prop({required: true, unique: true})
-    name: string;
+  @Prop()
+  address: string;
 
-    @Prop()
-    address: string;
+  @Prop({ required: true })
+  latitude: number;
 
-    @Prop({required: true})
-    latitude: number;
+  @Prop({ required: true })
+  longitude: number;
 
-    @Prop({required: true})
-    longitude: number;
-
-    @Prop()
-    photoPath: string;
+  @Prop()
+  photoPath: string;
 }
-
 
 export const PharmacySchema = SchemaFactory.createForClass(Pharmacy);
 

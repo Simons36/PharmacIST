@@ -104,6 +104,17 @@ export class PharmacyService {
       const newPharmacy = new this.pharmacyModel(pharmacyDto);
       await newPharmacy.save();
     } catch (error) {
+      // Before throwing the error, erase the photo file if it was saved
+      if (pharmacyDto.photoPath) {
+        try {
+          require('fs').unlinkSync(pharmacyDto.photoPath);
+        } catch (error) {
+          // Ignore the error
+        }
+      }
+
+      // Now check if the error is due to duplicate key
+
       if (error.code === 11000 || error.code === 11001) {
         throw new HttpException(
           `Pharmacy name '${pharmacyDto.name}' is already in use.`,
@@ -116,5 +127,23 @@ export class PharmacyService {
     }
 
     this.logger.log('New pharmacy added successfully');
+  }
+
+  /**
+   * Get all pharmacies from the database
+   */
+  async getAllPharmacies() {
+    this.logger.log('Received request to get all pharmacies');
+
+    try {
+      const pharmacies = await this.pharmacyModel
+        .find()
+        .select('name address latitude longitude -_id')
+        .exec();
+      return pharmacies;
+    } catch (error) {
+      this.logger.log('Error while getting all pharmacies: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

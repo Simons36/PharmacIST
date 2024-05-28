@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PharmacyDto } from './dto/pharmacy.dto';
 import { PharmacyService } from './pharmacy.service';
@@ -18,5 +18,10 @@ export class PharmacyController {
     console.log(pharmacyDto);
     // Process the file and the other form data here
     return await this.pharmacyService.addNewPharmacy(pharmacyDto, photo);
+  }
+
+  @Get('all')
+  async getAllPharmacies() {
+    return await this.pharmacyService.getAllPharmacies();
   }
 }
