@@ -35,8 +35,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.ParmacyService
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.PharmacyServiceImpl
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.ParmacyService
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDtoBuilder
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions.Companion.dpToPx
