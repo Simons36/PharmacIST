@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service
 
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 

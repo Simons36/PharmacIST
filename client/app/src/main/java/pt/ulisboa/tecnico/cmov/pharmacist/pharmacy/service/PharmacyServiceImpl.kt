@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service
 
 import android.content.Context
 import io.ktor.client.HttpClient
@@ -18,9 +18,8 @@ import io.ktor.client.request.forms.formData
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import java.io.File
 import java.net.HttpURLConnection
-import kotlin.concurrent.thread
 
-class PharmacyServiceImpl(private val context : Context) : ParmacyService{
+class PharmacyServiceImpl(private val context : Context) : ParmacyService {
 
     private val httpClient = HttpClient(Android) {
         install(Logging)
