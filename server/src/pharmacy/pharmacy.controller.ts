@@ -41,6 +41,8 @@ export class PharmacyController {
 
   @Get('sync/version/:version')
   async getPharmaciesByVersion(@Param('version') version: number) {
-    return await this.pharmacyService.getPharmacySyncByVersion(version);
+    let val =  await this.pharmacyService.getPharmacySyncByVersion(version);
+    console.log(val);
+    return val;
   }
 }

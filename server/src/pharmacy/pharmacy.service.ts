@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Pharmacy, PharmacyDocument } from './schemas/pharmacy.schema';
 import { Model } from 'mongoose';
 import { PharmacyVersion } from './schemas/pharmacy-version.schema';
+import { log } from 'console';
 
 @Injectable()
 export class PharmacyService {
@@ -135,13 +136,13 @@ export class PharmacyService {
       //get the current version (find greatest version number and increment it by 1)
       let currentVersion = (
         await this.pharmacyVersionModel.findOne().sort({ version: -1 }).exec()
-      ).version;
+      )
       let newVersion: number;
 
       if (!currentVersion) {
         newVersion = 1;
       } else {
-        newVersion = currentVersion + 1;
+        newVersion = currentVersion.version + 1;
       }
 
       //create new version
@@ -151,7 +152,9 @@ export class PharmacyService {
         pharmacyName: pharmacyDto.name,
       });
       await newPharmacyVersion.save();
-    } catch (error) {}
+    } catch (error) {
+      this.logger.log('Error while adding new pharmacy version: ' + error.message);
+    }
 
     this.logger.log('New pharmacy added successfully');
   }
@@ -224,13 +227,24 @@ export class PharmacyService {
     // received number is the version number that the client has
     // need to check all the more recent versions and return the changes (additions and deletions)
 
-    this.logger.log('Received request to get pharmacy sync by version');
+    this.logger.log('Received request to get pharmacy sync by version, version number received: ' + knownVersionByClien.toString() + '.');
 
     try {
       //get the current version (find greatest version number)
-      let currentVersion = (
+      let currentVersionObject = (
         await this.pharmacyVersionModel.findOne().sort({ version: -1 }).exec()
-      ).version;
+      );
+
+      if(!currentVersionObject){
+        // There are no pharmacies currently, return nothing
+        return {
+          version: 0,
+          add: [],
+          remove: [],
+        };
+      }
+
+      let currentVersion = currentVersionObject.version;
 
       if (!currentVersion) {
         return {
