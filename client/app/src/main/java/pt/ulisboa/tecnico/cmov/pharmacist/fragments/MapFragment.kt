@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.fragments
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.*
@@ -26,6 +28,7 @@ import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
+import kotlin.concurrent.thread
 
 class MapFragment : Fragment(), OnMapReadyCallback{
 
@@ -92,12 +95,20 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        mapHelper = MapHelper(requireContext(), googleMap, resources)
-        locationService = LocationService(requireActivity(), mapHelper, this)
+        if (checkLocationPermission()) {
+            mapHelper = MapHelper(requireContext(), googleMap, resources)
+            locationService = LocationService(requireActivity(), mapHelper, this)
 
-        setupMap()
+            setupMap()
 
-        updatePharmacies()
+            thread {
+                updatePharmacies()
+            }
+
+        } else {
+            requestLocationPermission();
+        }
+
 
     }
 
@@ -119,18 +130,25 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     }
 
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    private fun checkLocationPermission(): Boolean {
+        val context = context ?: return false
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
 
+    private fun requestLocationPermission() {
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), FINE_PERMISSION_CODE)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == FINE_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setupMap()
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // Permission granted
+                onMapReady(googleMap)
             } else {
-                Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show()
+                // Permission denied, handle appropriately (e.g., disable location functionality)
+                Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
             }
         }
     }
