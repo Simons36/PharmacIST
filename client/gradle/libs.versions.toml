@@ -1,5 +1,5 @@
 [versions]
-agp = "8.3.2"
+agp = "8.4.0"
 googlePlacesAutocompleteEdittext = "0.0.8"
 googlePlacesAutocompleteEdittextVersion = "1.0.2"
 kotlin = "1.9.0"

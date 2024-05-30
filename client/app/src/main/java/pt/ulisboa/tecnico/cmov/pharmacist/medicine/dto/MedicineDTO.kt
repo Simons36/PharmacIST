@@ -1,5 +1,10 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto
 
-data class MedicineDTO(
-    private val name : String
-)
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class MedicineDTO(private val name: String) {
+    fun getName(): String {
+        return name
+    }
+}
