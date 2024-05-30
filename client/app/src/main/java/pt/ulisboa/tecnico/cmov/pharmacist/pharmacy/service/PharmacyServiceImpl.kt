@@ -4,22 +4,33 @@ import android.content.Context
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
-import io.ktor.client.plugins.logging.Logging
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
-import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import kotlinx.serialization.json.Json
-import io.ktor.serialization.kotlinx.json.*
-
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
+import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
 import java.io.File
+import java.io.FileOutputStream
 import java.net.HttpURLConnection
 
 object PharmacyServiceImpl : ParmacyService {
@@ -77,6 +88,41 @@ object PharmacyServiceImpl : ParmacyService {
         }else if(response.status.value != HttpURLConnection.HTTP_CREATED){
             throw RuntimeException("Error adding pharmacy: ${response.bodyAsText()}")
         }
+
+    }
+
+    override suspend fun getPharmacyPhoto(pharmacyName : String, context: Context) : String{
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val getPharmacyPhotoUrl = "$apiUrl/pharmacy/photo/$pharmacyName"
+
+        val response : HttpResponse = this.httpClient.get(getPharmacyPhotoUrl)
+
+        if(response.status.value != HttpURLConnection.HTTP_OK){
+            throw RuntimeException("Error getting pharmacy photo: ${response.bodyAsText()}")
+        }
+
+        // Parse the JSON response
+        val jsonResponse = response.bodyAsText()
+        val jsonElement = Json.parseToJsonElement(jsonResponse)
+        val dataArray = jsonElement.jsonObject["data"]?.jsonArray ?: throw RuntimeException("Invalid response format")
+
+        // Convert the JSON array to a ByteArray
+        val byteArray = ByteArray(dataArray.size) { index ->
+            dataArray[index].jsonPrimitive.int.toByte()
+        }
+
+        // Define the file name and path
+        val fileName = "$pharmacyName.png"
+        val file = File(context.filesDir, fileName)
+
+        // Write the byte array to the file
+        withContext(Dispatchers.IO) {
+            FileOutputStream(file).use { outputStream ->
+                outputStream.write(byteArray)
+            }
+        }
+
+        return file.absolutePath
 
     }
 

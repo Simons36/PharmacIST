@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.service
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.`interface`
 
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
@@ -16,5 +16,11 @@ interface PharmacyInfoDbInterface {
     fun getLatestVersion() : Int
 
     fun setLatestVersion(version : Int)
+
+    fun getPharmacyInfo(pharmacyName : String) : PharmacyDto?
+
+    fun getPharmacyPhotoPath(pharmacyName: String) : String?
+
+    fun addPharmacyPhoto(pharmacyName: String, photoPath : String)
 
 }

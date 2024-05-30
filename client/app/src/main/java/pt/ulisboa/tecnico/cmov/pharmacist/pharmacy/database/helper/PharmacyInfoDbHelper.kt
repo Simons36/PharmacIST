@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.contract.PharmacyInfoContract.PharmacyInfoEntry
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.contract.PharmacyVersionContract.PharmacyVersionEntry
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.service.PharmacyInfoDbInterface
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.`interface`.PharmacyInfoDbInterface
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
 /**
@@ -169,6 +169,94 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
         return pharmacies.size
     }
 
+    override fun getPharmacyInfo(pharmacyName: String): PharmacyDto? {
+        val db = this.readableDatabase
+
+        val projection = arrayOf(
+            PharmacyInfoEntry.COLUMN_NAME_NAME,
+            PharmacyInfoEntry.COLUMN_NAME_LATITUDE,
+            PharmacyInfoEntry.COLUMN_NAME_LONGITUDE,
+            PharmacyInfoEntry.COLUMN_NAME_ADDRESS
+        )
+
+        val selection = "${PharmacyInfoEntry.COLUMN_NAME_NAME} = ?"
+        val selectionArgs = arrayOf(pharmacyName)
+
+        val cursor = db.query(
+            PharmacyInfoEntry.TABLE_NAME,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        var pharmacy : PharmacyDto? = null
+        with(cursor) {
+            while (moveToNext()) {
+                val name = getString(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_NAME))
+                val latitude =
+                    getDouble(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_LATITUDE))
+                val longitude =
+                    getDouble(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_LONGITUDE))
+                val address =
+                    getString(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_ADDRESS))
+
+                pharmacy = PharmacyDto(name, address, latitude, longitude)
+            }
+        }
+
+        cursor.close()
+
+        return pharmacy
+    }
+
+    override fun getPharmacyPhotoPath(pharmacyName: String) : String?{
+        val db = this.readableDatabase
+
+        val projection = arrayOf(
+            PharmacyInfoEntry.COLUMN_NAME_PHOTO_PATH
+        )
+
+        val selection = "${PharmacyInfoEntry.COLUMN_NAME_NAME} = ?"
+        val selectionArgs = arrayOf(pharmacyName)
+
+        val cursor = db.query(
+            PharmacyInfoEntry.TABLE_NAME,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        var photoPath : String? = null
+        with(cursor) {
+            while (moveToNext()) {
+                photoPath = getString(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_PHOTO_PATH))
+            }
+        }
+
+        cursor.close()
+
+        return photoPath
+    }
+
+    override fun addPharmacyPhoto(pharmacyName: String, photoPath: String) {
+        val db = this.writableDatabase
+
+        val values = ContentValues().apply {
+            put(PharmacyInfoEntry.COLUMN_NAME_PHOTO_PATH, photoPath)
+        }
+
+        val selection = "${PharmacyInfoEntry.COLUMN_NAME_NAME} = ?"
+        val selectionArgs = arrayOf(pharmacyName)
+
+        db.update(PharmacyInfoEntry.TABLE_NAME, values, selection, selectionArgs)
+    }
+
     companion object {
         const val DATABASE_VERSION = 1
         const val DATABASE_NAME = "PharmacyInfo.db"
@@ -178,7 +266,8 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
                     "${PharmacyInfoEntry.COLUMN_NAME_NAME} TEXT PRIMARY KEY," +
                     "${PharmacyInfoEntry.COLUMN_NAME_ADDRESS} TEXT," +
                     "${PharmacyInfoEntry.COLUMN_NAME_LATITUDE} REAL," +
-                    "${PharmacyInfoEntry.COLUMN_NAME_LONGITUDE} REAL)"
+                    "${PharmacyInfoEntry.COLUMN_NAME_LONGITUDE} REAL," +
+                    "${PharmacyInfoEntry.COLUMN_NAME_PHOTO_PATH} TEXT)"
 
         private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${PharmacyInfoEntry.TABLE_NAME}"
 
