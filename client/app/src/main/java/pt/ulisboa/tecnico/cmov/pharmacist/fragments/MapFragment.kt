@@ -15,13 +15,15 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.service.PharmacyInfoDbServiceImpl
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.helper.PharmacyInfoDbHelper
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
 
@@ -53,6 +55,9 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     private var hasPickedLocation = false;
     private var pickedLocation : LatLng? = null;
 
+    // To communicate with cache
+    private lateinit var pharmacyCache : PharmacyInfoDbHelper
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -78,6 +83,8 @@ class MapFragment : Fragment(), OnMapReadyCallback{
                 isForPickLocation = true
             }
         }
+
+        pharmacyCache = PharmacyInfoDbHelper(requireContext())
 
         return view
     }
@@ -223,39 +230,66 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     }
 
     private fun updatePharmacies(){
-        var removeAndAddPair : Pair<List<PharmacyDto>, List<PharmacyDto>>? = null
+        var updatePharmacyInfoResponse : UpdatePharmaciesStatusResponse? = null
 
         lifecycleScope.launch {
 
+            val syncJob = async {
+                syncMapWithCache()
+            }
+
             try {
-                removeAndAddPair = PharmacyServiceImpl.updatePharmacyInfo(PharmacyInfoDbServiceImpl.getCachedPharmaciesInfo(requireContext()), requireContext())
-            }catch (e : RuntimeException){
-                Toast.makeText(requireContext(), "Error updating pharmacies, you might be seeing outdated results", Toast.LENGTH_SHORT).show()
+                updatePharmacyInfoResponse = PharmacyServiceImpl.syncPharmacyInfo(
+                    pharmacyCache.getLatestVersion(),
+                    requireContext()
+                )
+            } catch (e: RuntimeException) {
+                Toast.makeText(
+                    requireContext(),
+                    "Error updating pharmacies, you might be seeing outdated results",
+                    Toast.LENGTH_SHORT
+                ).show()
+                e.printStackTrace()
                 return@launch
             }
 
+            val removeList = updatePharmacyInfoResponse!!.remove
+            val addList = updatePharmacyInfoResponse!!.add
+
+            for(pharmacy in addList){
+                Log.i("DEBUG", "Pharmacy to add: ${pharmacy.name}")
+            }
+
+            // Wait for the syncJob to finish
+            syncJob.await()
+
+            // Update map and cache
+            for (pharmacy in removeList) {
+                mapHelper.removeDefaultMarker(pharmacy.name)
+                pharmacyCache.removePharmacyInfoFromCache(pharmacy)
+            }
+
+            for (pharmacy in addList) {
+                mapHelper.addDefaultMarker(
+                    LatLng(pharmacy.latitude, pharmacy.longitude),
+                    pharmacy.name,
+                    pharmacy.name
+                )
+                pharmacyCache.addPharmacyInfoToCache(pharmacy)
+            }
+
+            //Write version to database
+            pharmacyCache.setLatestVersion(updatePharmacyInfoResponse!!.version)
         }
 
-        if(removeAndAddPair == null){
-            Toast.makeText(requireContext(), "Error updating pharmacies, you might be seeing outdated results", Toast.LENGTH_SHORT).show()
-            return
-        }
 
-        val removeList = removeAndAddPair!!.first
-        val addList = removeAndAddPair!!.second
+    }
 
-        // Update map and cache
-        for(pharmacy in removeList){
-            mapHelper.removeDefaultMarker(pharmacy.name)
-            PharmacyInfoDbServiceImpl.removePharmacyInfoFromCache(pharmacy, requireContext())
-        }
-
-        for(pharmacy in addList){
+    private fun syncMapWithCache(){
+        val pharmacies = pharmacyCache.getCachedPharmaciesInfo()
+        for(pharmacy in pharmacies){
             mapHelper.addDefaultMarker(LatLng(pharmacy.latitude, pharmacy.longitude), pharmacy.name, pharmacy.name)
-            PharmacyInfoDbServiceImpl.addPharmacyInfoToCache(pharmacy, requireContext())
         }
-
-
     }
 
     companion object{
