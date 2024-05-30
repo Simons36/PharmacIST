@@ -316,4 +316,37 @@ export class PharmacyService {
     }
   }
 
+  async getPharmacyPhoto(pharmacyName: string) {
+    this.logger.log('Received request to get pharmacy photo for ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (!pharmacy.photoPath) {
+        throw new HttpException(
+          'Photo not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Read the photo file
+      const fs = require('fs');
+      const photoData = fs.readFileSync(pharmacy.photoPath);
+
+      return photoData;
+    } catch (error) {
+      this.logger.log('Error while getting pharmacy photo: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }
