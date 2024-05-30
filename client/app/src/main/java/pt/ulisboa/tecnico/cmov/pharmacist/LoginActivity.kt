@@ -11,7 +11,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.AuthenticationServiceImpl
-import kotlin.concurrent.thread
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.helper.PharmacyInfoDbHelper
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
 
 class LoginActivity : AppCompatActivity() {
@@ -24,7 +25,10 @@ class LoginActivity : AppCompatActivity() {
         val editTextPassword = findViewById<EditText>(R.id.editTextPassword)
         val buttonLogin = findViewById<Button>(R.id.buttonLogin)
 
+
         buttonLogin.setOnClickListener {
+
+
             // Handle login button click
             // Validate username/email and password, then proceed with authentication
 

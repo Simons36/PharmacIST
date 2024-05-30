@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service
 
 import android.content.Context
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.logging.Logging
@@ -80,15 +81,11 @@ object PharmacyServiceImpl : ParmacyService {
     }
 
 
-    override suspend fun updatePharmacyInfo(pharmaciesList: List<PharmacyDto>, context: Context) : Pair<List<PharmacyDto>, List<PharmacyDto>>{
+    override suspend fun syncPharmacyInfo(knownVersion : Int, context: Context) : UpdatePharmaciesStatusResponse{
         val apiUrl: String = ConfigClass.getUrl(context)
-        val updatePharmaciesStatusUrl = "$apiUrl/pharmacy/updateStatus"
+        val updatePharmaciesStatusUrl = "$apiUrl/pharmacy/sync/version/${knownVersion}"
 
-        val response : HttpResponse = this.httpClient.post(updatePharmaciesStatusUrl){
-            contentType(ContentType.Application.Json)
-            setBody(pharmaciesList)
-        }
-
+        val response : HttpResponse = this.httpClient.get(updatePharmaciesStatusUrl)
         // server will response with two lists: one list for remove (pharmacies to remove)
         // and another list for add (pharmacies to add)
 
@@ -97,12 +94,10 @@ object PharmacyServiceImpl : ParmacyService {
         }
 
         val jsonResponse = response.bodyAsText()
-        val statusResponse: UpdatePharmaciesStatusResponse = Json.decodeFromString(jsonResponse)
-
-        val removeList = statusResponse.remove
-        val addList = statusResponse.add
-
-        return Pair(removeList, addList)
+        Log.i("DEBUG", jsonResponse)
+        val deserialized =  Json.decodeFromString(UpdatePharmaciesStatusResponse.serializer(), jsonResponse)
+        Log.i("DEBUG", deserialized.toString())
+        return deserialized
 
     }
 
