@@ -9,5 +9,6 @@ object PharmacyInfoContract {
         const val COLUMN_NAME_LATITUDE = "latitude"
         const val COLUMN_NAME_LONGITUDE = "longitude"
         const val COLUMN_NAME_ADDRESS = "address"
+        const val COLUMN_NAME_PHOTO_PATH = "photo_path"
     }
 }

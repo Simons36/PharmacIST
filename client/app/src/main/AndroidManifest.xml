@@ -55,6 +55,11 @@
             android:exported="true">
         </activity>
 
+        <activity
+            android:name=".PharmacyInfoPanelActivity"
+            android:exported="true">
+        </activity>
+
 
         <!-- Add your meta-data tag here -->
         <meta-data

@@ -16,6 +16,9 @@ import pt.ulisboa.tecnico.cmov.pharmacist.exception.ErrorAddingMarkerException
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 
 class MapHelper(private val context: Context, private val googleMap: GoogleMap, private val resources: Resources) {
+    companion object {
+        const val PHARMACY_TAG = "pharmacy"
+    }
 
     private var currentLocationMarker : Marker? = null
 
@@ -50,6 +53,7 @@ class MapHelper(private val context: Context, private val googleMap: GoogleMap, 
 
     fun addDefaultMarker(latLng: LatLng, title: String, id : String) {
         val marker = googleMap.addMarker(MarkerOptions().position(latLng).title(title)) ?: throw ErrorAddingMarkerException()
+        marker.tag = PHARMACY_TAG
         defaultMarkersMap[id] = marker
     }
 
@@ -63,4 +67,5 @@ class MapHelper(private val context: Context, private val googleMap: GoogleMap, 
     }
 
     // Add more map-related functions as needed...
+
 }

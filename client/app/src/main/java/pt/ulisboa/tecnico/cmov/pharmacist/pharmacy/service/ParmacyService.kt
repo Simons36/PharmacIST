@@ -12,4 +12,6 @@ interface ParmacyService {
 
     suspend fun syncPharmacyInfo(knownVersion : Int, context: Context) : UpdatePharmaciesStatusResponse
 
+    suspend fun getPharmacyPhoto(pharmacyName : String, context: Context) : String
+
 }

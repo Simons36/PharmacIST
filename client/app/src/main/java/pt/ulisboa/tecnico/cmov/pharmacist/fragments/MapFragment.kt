@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +23,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
+import pt.ulisboa.tecnico.cmov.pharmacist.PharmacyInfoPanelActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
@@ -61,6 +65,9 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     // To communicate with cache
     private lateinit var pharmacyCache : PharmacyInfoDbHelper
 
+    // Pharmacy Info Panel launcher
+    private lateinit var pharmacyInfoPanelLauncher : ActivityResultLauncher<Intent>
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -78,6 +85,8 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         setupAddPharmacyButton(view);
         setupCancelButton(view);
         setupPickLocationButton(view);
+
+        initPharmacyInfoPanelLauncher()
 
         if(arguments != null){
 
@@ -101,8 +110,22 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
             setupMap()
 
+
             thread {
                 updatePharmacies()
+            }
+
+            googleMap.setOnMarkerClickListener { marker ->
+                val markerTag = marker.tag as? String
+
+                if(markerTag == MapHelper.PHARMACY_TAG){
+                    val pharmacyName = marker.title
+                    val intent = Intent(requireContext(), PharmacyInfoPanelActivity::class.java)
+                    intent.putExtra("pharmacyName", pharmacyName)
+                    pharmacyInfoPanelLauncher.launch(intent)
+                }
+
+                false
             }
 
         } else {
@@ -126,6 +149,17 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
         if(isForPickLocation){
             flipToPickLocationMode()
+        }
+    }
+
+    private fun initPharmacyInfoPanelLauncher(){
+        pharmacyInfoPanelLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                val location = Location("Pharmacy location")
+                location.latitude = result.data?.getDoubleExtra("latitude", 0.0)!!
+                location.longitude = result.data?.getDoubleExtra("longitude", 0.0)!!
+                mapHelper.moveCamera(location, 15f)
+            }
         }
     }
 
