@@ -1,0 +1,120 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp">
+
+    <!-- Title TextView -->
+    <TextView
+        android:id="@+id/titleAddPharmacy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add/Remove Stock"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@color/white"/>
+
+    <!-- Name Label TextView -->
+    <TextView
+        android:id="@+id/labelName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select the name of the medicine:"
+        android:textSize="16sp"
+        android:layout_below="@id/titleAddPharmacy"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp" />
+
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        android:layout_below="@id/labelName"/>
+
+    <TextView
+        android:id="@+id/labelQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter the quantity of the medicine:"
+        android:textSize="16sp"
+        android:layout_below="@id/spinner1"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp" />
+
+    <EditText
+        android:id="@+id/editTextQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelQuantity"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter quantity"
+        android:inputType="number"
+        app:backgroundTint="@color/white" />
+
+    <TextView
+        android:id="@+id/labelAddOrRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select whether you want to add or remove stock:"
+        android:textSize="16sp"
+        android:layout_below="@id/editTextQuantity"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelAddOrRemove"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
+        <RadioButton
+            android:id="@+id/radioAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Stock"
+            android:checked="true"/>
+        <RadioButton
+            android:id="@+id/radioRemove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remove Stock"/>
+    </RadioGroup>
+
+
+    <Button
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Confirm"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@color/white"/>
+</RelativeLayout>

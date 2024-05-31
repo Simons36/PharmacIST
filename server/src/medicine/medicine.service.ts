@@ -52,8 +52,12 @@ export class MedicineService {
         photoPath: addMedicineDto.photoPath,
       };
 
-      const newMedicine = new this.medicineModel(medicineDto);
-      await newMedicine.save();
+      try{
+        const newMedicine = new this.medicineModel(medicineDto);
+        await newMedicine.save();
+
+      }catch(error){
+      }
 
       let quantity = addMedicineDto.quantity;
       await this.pharmacyService.addQuantityOfMedicineToPharmacy(addMedicineDto.pharmacyName, addMedicineDto.name, quantity);
@@ -119,8 +123,7 @@ export class MedicineService {
         let medicine = await this.medicineModel.findOne({ name: medicineQuantity.name }).exec();
         let medicineDto: MedicineQuantityDto = {
           name: medicineQuantity.name,
-          quantity: medicineQuantity.quantity,
-          purpose: medicine.purpose,
+          quantity: medicineQuantity.quantity
         };
         medicineDtos.push(medicineDto);
       }
@@ -134,6 +137,28 @@ export class MedicineService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async addMedicineToPharmacy(pharmacyName: string, medicineName: string, quantity: number): Promise<void> {
+    try {
+      await this.pharmacyService.addStockToPharmacy(pharmacyName, medicineName, quantity);
+      this.logger.log(`Added ${quantity} of ${medicineName} to ${pharmacyName} inventory successfully.`);
+    } catch (error) {
+      this.logger.error("Error adding medicine to pharmacy: " + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async removeMedicineFromPharmacy(pharmacyName: string, medicineName: string, quantity: number): Promise<void> {
+    try {
+      await this.pharmacyService.removeStockFromPharmacy(pharmacyName, medicineName, quantity);
+      this.logger.log(`Removed ${quantity} of ${medicineName} from ${pharmacyName} inventory successfully.`);
+    } catch (error) {
+      this.logger.error("Error removing medicine from pharmacy: " + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  
 
   private mapToDto(medicine: MedicineDocument): MedicineDto {
     return {
