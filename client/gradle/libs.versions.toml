@@ -1,5 +1,5 @@
 [versions]
-agp = "8.3.2"
+agp = "8.4.0"
 googlePlacesAutocompleteEdittext = "0.0.8"
 googlePlacesAutocompleteEdittextVersion = "1.0.2"
 kotlin = "1.9.0"
@@ -20,6 +20,8 @@ playServicesMaps = "18.2.0"
 playServicesLocation = "21.2.0"
 sqliteKtx = "2.4.0"
 roomKtx = "2.6.1"
+navigationFragmentKtx = "2.6.0"
+navigationUiKtx = "2.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +48,8 @@ play-services-maps = { group = "com.google.android.gms", name = "play-services-m
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 my-edit-text = { module = "com.github.Simons36:Google-Places-AutoComplete-EditText", version.ref = "googlePlacesAutocompleteEdittextVersion" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
