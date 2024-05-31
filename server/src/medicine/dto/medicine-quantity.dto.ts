@@ -5,5 +5,4 @@ export class MedicineQuantityDto{
 
     readonly quantity : number;
 
-    readonly purpose : string;
 }
