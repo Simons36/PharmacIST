@@ -67,6 +67,9 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     // Pharmacy Info Panel launcher
     private lateinit var pharmacyInfoPanelLauncher : ActivityResultLauncher<Intent>
 
+    // Add pharamcy launcher
+    private lateinit var addPharmacyLauncher : ActivityResultLauncher<Intent>
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -86,6 +89,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         setupPickLocationButton(view);
 
         initPharmacyInfoPanelLauncher()
+        initAddPharmacyLauncher()
 
         if(arguments != null){
 
@@ -162,6 +166,15 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         }
     }
 
+    private fun initAddPharmacyLauncher(){
+        addPharmacyLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                updatePharmacies()
+
+            }
+        }
+    }
+
 
     private fun checkLocationPermission(): Boolean {
         val context = context ?: return false
@@ -209,7 +222,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             // Navigate to AddPharmacyActivity
             val intent = Intent(requireContext(), AddPharmacyActivity::class.java)
             intent.putExtra("lastKnownLocation", locationService.getLastKnownLocation())
-            startActivity(intent)
+            addPharmacyLauncher.launch(intent)
 
         }
     }
