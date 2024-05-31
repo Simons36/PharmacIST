@@ -383,6 +383,12 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             // Wait for the syncJob to finish
             syncJob.await()
 
+            pharmacyCache.unfavoriteAllPharmacies()
+
+            for (pharmacy in favoritePharmacies) {
+                pharmacyCache.setPharmacyFavorite(pharmacy, true)
+            }
+
             // Update map and cache
             for (pharmacy in removeList) {
                 mapHelper.removeDefaultMarker(pharmacy.name)
@@ -390,19 +396,22 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             }
 
             for (pharmacy in addList) {
-                mapHelper.addDefaultMarker(
-                    LatLng(pharmacy.latitude, pharmacy.longitude),
-                    pharmacy.name,
-                    pharmacy.name
-                )
+                if(pharmacyCache.isPharmacyFavorite(pharmacy.name)){
+                    mapHelper.addFavoriteMarker(
+                        LatLng(pharmacy.latitude, pharmacy.longitude),
+                        pharmacy.name,
+                        pharmacy.name
+                    )
+                }else{
+                    mapHelper.addDefaultMarker(
+                        LatLng(pharmacy.latitude, pharmacy.longitude),
+                        pharmacy.name,
+                        pharmacy.name
+                    )
+                }
                 pharmacyCache.addPharmacyInfoToCache(pharmacy)
             }
 
-            pharmacyCache.unfavoriteAllPharmacies()
-
-            for (pharmacy in favoritePharmacies) {
-                pharmacyCache.setPharmacyFavorite(pharmacy, true)
-            }
 
             //Write version to database
             pharmacyCache.setLatestVersion(updatePharmacyInfoResponse!!.version)
@@ -414,7 +423,19 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     private fun syncMapWithCache(){
         val pharmacies = pharmacyCache.getCachedPharmaciesInfo()
         for(pharmacy in pharmacies){
-            mapHelper.addDefaultMarker(LatLng(pharmacy.latitude, pharmacy.longitude), pharmacy.name, pharmacy.name)
+            if(pharmacyCache.isPharmacyFavorite(pharmacy.name)) {
+                mapHelper.addFavoriteMarker(
+                    LatLng(pharmacy.latitude, pharmacy.longitude),
+                    pharmacy.name,
+                    pharmacy.name
+                )
+            }else {
+                mapHelper.addDefaultMarker(
+                    LatLng(pharmacy.latitude, pharmacy.longitude),
+                    pharmacy.name,
+                    pharmacy.name
+                )
+            }
         }
     }
 

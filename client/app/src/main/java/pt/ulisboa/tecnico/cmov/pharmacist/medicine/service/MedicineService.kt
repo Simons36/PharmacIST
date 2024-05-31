@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.medicine.service
 
 import android.content.Context
+import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.AddMedicineDto
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.MedicineDTO
 
 interface MedicineService {
@@ -12,4 +13,5 @@ interface MedicineService {
 
     suspend fun getMedicinePhoto(medicineName: String, context: Context): ByteArray
 
+    suspend fun addMedicine(medicine: AddMedicineDto, context: Context)
 }

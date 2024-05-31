@@ -22,5 +22,6 @@ import { UserModule } from 'src/user/user.module';
   ],
   controllers: [PharmacyController],
   providers: [PharmacyService],
+  exports: [PharmacyService]
 })
 export class PharmacyModule {}

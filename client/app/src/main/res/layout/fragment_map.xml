@@ -16,11 +16,13 @@
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:layout_margin="15dp"
-        android:background="#2E2E2E"
+        android:background="@drawable/rounded_corners_address_search_shape"
         android:drawableStart="@drawable/search_icon_white"
         android:dropDownHeight="200dp"
+        android:paddingStart="8dp"
+        android:drawablePadding="8dp"
         android:elevation="5dp"
-        android:hint="  Search Address"
+        android:hint="Search Address"
         app:iconifiedByDefault="true" />
 
     <!-- Cancel Button, for picking location in add pharmacy -->

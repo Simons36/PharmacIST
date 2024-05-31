@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Typeface
@@ -9,6 +10,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StyleSpan
 import android.util.Log
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -35,6 +37,7 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
     private lateinit var imageViewPhoto : ImageView
     private lateinit var goToLocationButton : FloatingActionButton
     private lateinit var favIconButton : ImageView
+    private lateinit var createMedicineButton : Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +105,10 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
             // Init favicon
             pharmacy!!.isFavorite?.let { initFavIcon(pharmacyName, it) }
 
+            // Init create medicine button
+            initCreateMedicineButton(pharmacyName)
+
+            // Get photo requested earlier
             if(photoJob != null){
                 photoPath = photoJob.await()
                 if(photoPath == null.toString()){
@@ -228,6 +235,39 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
                     varIsFavorite = true
                 }
             }
+        }
+    }
+
+    private fun initCreateMedicineButton(pharmacyName: String){
+        createMedicineButton = findViewById<Button>(R.id.btnCreateMedicine)
+        createMedicineButton.setOnClickListener {
+
+            // Create the dialog
+            val builder = AlertDialog.Builder(this@PharmacyInfoPanelActivity)
+            builder.setTitle("Create Medicine")
+            builder.setMessage("Choose an option to create medicine")
+
+            // Set the options and their corresponding actions
+            builder.setPositiveButton("Create from Camera") { dialog, _ ->
+                val intent = Intent(this@PharmacyInfoPanelActivity, CreateMedicineActivity::class.java)
+                intent.putExtra("pharmacyName", pharmacyName)
+                intent.putExtra("creationMethod", "camera")
+                startActivity(intent)
+                dialog.dismiss()
+            }
+
+            builder.setNegativeButton("Create from Parameters") { dialog, _ ->
+                val intent = Intent(this@PharmacyInfoPanelActivity, CreateMedicineActivity::class.java)
+                intent.putExtra("pharmacyName", pharmacyName)
+                intent.putExtra("creationMethod", "parameters")
+                startActivity(intent)
+                dialog.dismiss()
+            }
+
+            // Show the dialog
+            val dialog = builder.create()
+            dialog.show()
+
         }
     }
 

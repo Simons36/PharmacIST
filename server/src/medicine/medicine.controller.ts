@@ -2,6 +2,7 @@ import { Controller, Get, Post, Param, HttpCode, UploadedFile, Body, UseIntercep
 import { MedicineService } from './medicine.service';
 import { MedicineDto } from './dto/medicine.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AddMedicineDto } from './dto/add-medicine.dto';
 
 @Controller('medicine')
 export class MedicineController {
@@ -11,7 +12,7 @@ export class MedicineController {
     @Post('add')
     @HttpCode(201)
     @UseInterceptors(FileInterceptor('photo'))
-    addMedicine(@Body() medicineDto : MedicineDto, @UploadedFile() photo : Express.Multer.File | undefined) {
+    addMedicine(@Body() medicineDto : AddMedicineDto, @UploadedFile() photo : Express.Multer.File | undefined) {
         return this.medicineService.addMedicine(medicineDto, photo);
     }
 

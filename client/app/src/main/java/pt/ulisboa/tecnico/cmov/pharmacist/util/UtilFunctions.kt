@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.util
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
@@ -76,6 +77,29 @@ class UtilFunctions {
         fun getJwtTokenFromSharedPreferences(context: Context): String? {
             val sharedPref = context.getSharedPreferences("jwtToken", Context.MODE_PRIVATE)
             return sharedPref.getString("jwtToken", null)
+        }
+
+        fun showDialog(title : String, message : String, context: Context, onYesClicked : () -> Unit, onNoClicked : () -> Unit){
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle(title)
+            builder.setMessage(message)
+
+            builder.setPositiveButton("Yes") { dialog, _ ->
+                // Set the address to the current location
+                onYesClicked()
+
+
+
+                dialog.dismiss()
+            }
+
+            builder.setNegativeButton("No") { dialog, _ ->
+                onNoClicked()
+                dialog.dismiss()
+            }
+
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
         }
 
         fun getUsernameFromJwtToken(context: Context): String? {

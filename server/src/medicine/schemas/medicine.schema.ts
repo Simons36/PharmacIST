@@ -7,6 +7,12 @@ export class Medicine {
   @Prop({ required: true, unique: true })
   name: string;
 
+  @Prop({ unique: true })
+  barcode: string;
+
+  @Prop({ required: true })
+  purpose: string;
+
   @Prop()
   photoPath: string;
 }

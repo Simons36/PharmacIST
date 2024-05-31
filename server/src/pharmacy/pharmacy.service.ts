@@ -365,5 +365,70 @@ export class PharmacyService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
+  async addQuantityOfMedicineToPharmacy(pharmacyName : string, medicineName : string, quantity : number){
+    this.logger.log('Received request to add quantity of medicine ' + medicineName + ' to pharmacy ' + pharmacyName + '.');
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      //check if the medicine already exists in the pharmacy
+      let medicineAmount = pharmacy.medicines.find(medicineAmount => medicineAmount.medicineName === medicineName);
+
+      if(medicineAmount){
+        //medicine already exists, add the quantity
+        medicineAmount.quantity += quantity;
+      } else {
+        //medicine does not exist, create new medicine amount
+        pharmacy.medicines.push({
+          medicineName: medicineName,
+          quantity: quantity
+        });
+      }
+
+      await pharmacy.save();
+    } catch (error) {
+      this.logger.log('Error while adding quantity of medicine to pharmacy: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+  async getPharmacyByName(pharmacyName: string) {
+    this.logger.log('Received request to get pharmacy by name: ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        name : pharmacy.name,
+        address : pharmacy.address,
+        latitude : pharmacy.latitude,
+        longitude : pharmacy.longitude,
+        isFavorite : true,
+      };
+    } catch (error) {
+      this.logger.log('Error while getting pharmacy by name: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }
