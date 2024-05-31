@@ -264,6 +264,10 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
                 dialog.dismiss()
             }
 
+            // Show the dialog
+            val dialog = builder.create()
+            dialog.show()
+
         }
     }
 
