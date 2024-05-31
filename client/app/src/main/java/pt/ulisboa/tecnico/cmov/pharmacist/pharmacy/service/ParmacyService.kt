@@ -14,6 +14,8 @@ interface ParmacyService {
 
     suspend fun getPharmacyPhoto(pharmacyName : String, context: Context) : String
 
+    suspend fun getPharmacyByName(pharmacyName : String, context: Context) : PharmacyDto
+
     suspend fun addFavoritePharmacy(pharmacyName : String, context: Context)
 
     suspend fun removeFavoritePharmacy(pharmacyName : String, context: Context)

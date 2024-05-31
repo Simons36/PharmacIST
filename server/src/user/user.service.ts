@@ -117,4 +117,24 @@ export class UserService {
       );
     }
   }
+
+  async getFavoritePharmacies(username: string): Promise<string[]> {
+    try {
+      // Find user by username
+      const user = await this.userModel.findOne({ username }).exec();
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Return the list of favorite pharmacies
+      return user.favoritePharmacies;
+    } catch (error) {
+      throw new HttpException(
+        'Error retrieving favorite pharmacies',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  
 }

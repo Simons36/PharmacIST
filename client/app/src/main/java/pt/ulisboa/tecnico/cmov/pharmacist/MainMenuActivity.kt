@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
+import ProfileFragment
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -10,7 +11,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.MapFragment
-import pt.ulisboa.tecnico.cmov.pharmacist.fragments.ProfileFragment
 import pt.ulisboa.tecnico.cmov.pharmacist.fragments.SearchMedicineFragment
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
 
@@ -54,7 +54,7 @@ class MainMenuActivity : AppCompatActivity() {
         }
 
         // Set the default selected item
-        bottomNavigationView.selectedItemId = R.id.navigation_profile
+        bottomNavigationView.selectedItemId = R.id.pharmacy_map
     }
 
     //to handle map being requested from add pharmacy activity

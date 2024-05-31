@@ -23,7 +23,6 @@ class SearchMedicineFragment : Fragment() {
     private lateinit var searchView: SearchView
     private lateinit var medicinesRecyclerView: RecyclerView
     private lateinit var medicineAdapter: MedicineAdapter
-    private lateinit var medicineService: MedicineServiceImpl
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,7 +41,6 @@ class SearchMedicineFragment : Fragment() {
 
         // Set up RecyclerView
         medicinesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        // Inside onViewCreated function
         medicineAdapter = MedicineAdapter(emptyList()) { medicine ->
             // Handle item click here
             val intent = Intent(requireContext(), MedicineDetailsActivity::class.java)
@@ -51,9 +49,6 @@ class SearchMedicineFragment : Fragment() {
             startActivity(intent)
         }
         medicinesRecyclerView.adapter = medicineAdapter
-
-        // Initialize the medicine service
-        medicineService = MedicineServiceImpl()
 
         // Set up SearchView listener
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -75,15 +70,17 @@ class SearchMedicineFragment : Fragment() {
                 return false
             }
         })
-
-
-
     }
 
     private fun fetchMedicines(query: String, context: Context) {
         lifecycleScope.launch {
-            val medicines: List<MedicineDTO> = medicineService.searchMedicines(query, context)
-            medicineAdapter.updateMedicines(medicines)
+            try {
+                val medicines: List<MedicineDTO> = MedicineServiceImpl.searchMedicines(query, context)
+                medicineAdapter.updateMedicines(medicines)
+            } catch (e: Exception) {
+                // Handle error, e.g., show a toast or log the error
+                e.printStackTrace()
+            }
         }
     }
 }

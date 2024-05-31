@@ -12,6 +12,8 @@ interface MedicineService {
 
     suspend fun getAllMedicines(context: Context): List<MedicineDTO>
 
+    suspend fun getMedicinePhoto(medicineName: String, context: Context): ByteArray
+
     suspend fun addMedicine(medicine: AddMedicineDto, context: Context)
 
 }

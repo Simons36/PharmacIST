@@ -34,8 +34,6 @@ class CreateMedicineActivity : AppCompatActivity(){
 
     private var pharmacyName: String? = null
 
-    private val medicineService = MedicineServiceImpl()
-
     private lateinit var nameEditText: EditText
     private lateinit var quantityEditText: EditText
     private lateinit var purposeEditText: EditText
@@ -137,7 +135,8 @@ class CreateMedicineActivity : AppCompatActivity(){
                 val medicine = AddMedicineDto(name, pharmacyName!!, quantity, purpose, imagePath!!)
 
                 try {
-                    medicineService.addMedicine(medicine, this@CreateMedicineActivity)
+                    // Access the addMedicine method directly from the MedicineServiceImpl object
+                    MedicineServiceImpl.addMedicine(medicine, this@CreateMedicineActivity)
                     finish()
                 } catch (e: Exception) {
                     Toast.makeText(this@CreateMedicineActivity, e.message, Toast.LENGTH_SHORT).show()
@@ -145,6 +144,7 @@ class CreateMedicineActivity : AppCompatActivity(){
             }
         }
     }
+
 
     private fun initCancelButton(){
         cancelButton = findViewById(R.id.btnCancel)

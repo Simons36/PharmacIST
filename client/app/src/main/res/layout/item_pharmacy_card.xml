@@ -6,7 +6,9 @@
     android:layout_height="wrap_content"
     android:layout_margin="6dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/white">
+
 
     <LinearLayout
         android:layout_width="370dp"
@@ -21,7 +23,7 @@
             android:padding="8dp">
 
             <TextView
-                android:id="@+id/medicineNameTextView"
+                android:id="@+id/pharmacyNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorPrimary"
@@ -43,7 +45,7 @@
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/closestPharmacyNameTextView"
+                    android:id="@+id/closestAddressNameTextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -60,7 +62,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/pharmacyAddressTitleTextView"
+                    android:id="@+id/pharmacyDistanceTitleTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -70,7 +72,7 @@
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/pharmacyAddressView"
+                    android:id="@+id/pharmacyDistanceView"
                     android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -90,7 +92,7 @@
             android:layout_height="30dp"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_favourite" />
+            android:src="@drawable/fav_icon_full" />
 
     </LinearLayout>
 

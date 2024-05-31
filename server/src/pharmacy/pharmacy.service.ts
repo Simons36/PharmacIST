@@ -15,6 +15,7 @@ import { MedicineQuantityDto } from 'src/medicine/dto/medicine-quantity.dto';
 
 @Injectable()
 export class PharmacyService {
+
   constructor(
     private configService: AppConfigService,
     private userService: UserService,
@@ -123,6 +124,7 @@ export class PharmacyService {
       // Now check if the error is due to duplicate key
 
       if (error.code === 11000 || error.code === 11001) {
+        console.log(error);
         throw new HttpException(
           `Pharmacy name '${pharmacyDto.name}' is already in use.`,
           HttpStatus.CONFLICT,
@@ -331,6 +333,7 @@ export class PharmacyService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 
   async getPharmacyPhoto(pharmacyName: string) {
     this.logger.log('Received request to get pharmacy photo for ' + pharmacyName);

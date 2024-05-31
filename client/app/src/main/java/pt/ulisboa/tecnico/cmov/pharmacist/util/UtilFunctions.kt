@@ -66,6 +66,14 @@ class UtilFunctions {
             }
         }
 
+        fun saveUsernameToSharedPreferences(username: String, context: Context) {
+            val sharedPref = context.getSharedPreferences("username", Context.MODE_PRIVATE) ?: return
+            with (sharedPref.edit()) {
+                putString("username", username)
+                commit()
+            }
+        }
+
         fun getJwtTokenFromSharedPreferences(context: Context): String? {
             val sharedPref = context.getSharedPreferences("jwtToken", Context.MODE_PRIVATE)
             return sharedPref.getString("jwtToken", null)
@@ -92,6 +100,11 @@ class UtilFunctions {
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
+        }
+
+        fun getUsernameFromJwtToken(context: Context): String? {
+            val sharedPref = context.getSharedPreferences("username", Context.MODE_PRIVATE)
+            return sharedPref.getString("username", null)
         }
 
         fun sendHttpRequest(

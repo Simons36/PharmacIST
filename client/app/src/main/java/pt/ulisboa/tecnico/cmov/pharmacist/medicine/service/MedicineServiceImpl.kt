@@ -11,6 +11,9 @@ import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -18,20 +21,27 @@ import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.AddMedicineDto
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.DisplayMedicineDto
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.MedicineDTO
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.exception.MedicineAlreadyExistsException
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.exception.NoSuchPharmacyException
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
+import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
+import java.io.FileOutputStream
 import java.io.File
 import java.net.HttpURLConnection
 
 
-class MedicineServiceImpl : MedicineService {
+object MedicineServiceImpl : MedicineService {
 
-    private val httpClient = HttpClient(Android) {
+    val httpClient = HttpClient(Android) {
         install(Logging)
         install(ContentNegotiation) {
             json(Json {
@@ -68,6 +78,27 @@ class MedicineServiceImpl : MedicineService {
         }
     }
 
+    override suspend fun getMedicinePhoto(medicineName: String, context: Context): ByteArray {
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val getMedicinePhotoUrl = "$apiUrl/medicine/photo/$medicineName"
+
+        val response: HttpResponse = this.httpClient.get(getMedicinePhotoUrl)
+
+        if (response.status.value != 200) {
+            throw RuntimeException("Error getting medicine photo: ${response.bodyAsText()}")
+        }
+
+        // Parse the JSON response
+        val jsonResponse = response.bodyAsText()
+        val jsonElement = Json.parseToJsonElement(jsonResponse)
+        val dataArray = jsonElement.jsonObject["data"]?.jsonArray
+            ?: throw RuntimeException("Invalid response format")
+
+        // Convert the JSON array to a ByteArray
+        return ByteArray(dataArray.size) { index ->
+            dataArray[index].jsonPrimitive.int.toByte()
+        }
+    }
     override suspend fun addMedicine(medicine: AddMedicineDto, context: Context) {
         val apiUrl: String = ConfigClass.getUrl(context)
         val addMedicineURL = "$apiUrl/medicine/add"

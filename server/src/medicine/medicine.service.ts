@@ -112,6 +112,36 @@ export class MedicineService {
     }
   }
 
+  async getMedicinePhoto(name: string): Promise<Buffer | null> {
+    try {
+        const medicine = await this.medicineModel.findOne({ name }).select("photoPath -_id").exec();
+
+        
+        if (!medicine) {
+          throw new HttpException(
+            'Medicine not found',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        if (!medicine.photoPath) {
+          throw new HttpException(
+            'Medicine does not have a photo',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        
+        // Read the photo file
+        const fs = require('fs');
+        const photoData = fs.readFileSync(medicine.photoPath);
+        
+        return photoData;
+    } catch (error) {
+        this.logger.log('Error while getting medicine photo: ' + error.message);
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
   async getPharmacyInventory(pharmacyName: string): Promise<MedicineQuantityDto[]> {
     try {
       let medicineQuantities = await this.pharmacyService.getPharmacyInventory(pharmacyName);
