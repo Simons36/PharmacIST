@@ -123,6 +123,7 @@ export class PharmacyService {
       // Now check if the error is due to duplicate key
 
       if (error.code === 11000 || error.code === 11001) {
+        console.log(error);
         throw new HttpException(
           `Pharmacy name '${pharmacyDto.name}' is already in use.`,
           HttpStatus.CONFLICT,

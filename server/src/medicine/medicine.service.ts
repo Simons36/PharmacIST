@@ -109,7 +109,7 @@ export class MedicineService {
 
   async getMedicinePhoto(name: string): Promise<Buffer | null> {
     try {
-        const medicine = await this.pharmacyModel.findOne({ name }).select("photoPath -_id").exec();
+        const medicine = await this.medicineModel.findOne({ name }).select("photoPath -_id").exec();
 
         
         if (!medicine) {

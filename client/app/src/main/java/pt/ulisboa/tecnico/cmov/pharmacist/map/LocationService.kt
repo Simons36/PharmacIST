@@ -18,7 +18,6 @@ import pt.ulisboa.tecnico.cmov.pharmacist.fragments.MapFragment
 class LocationService(
     private val context: Context,
     private val mapHelper: MapHelper,
-    private val mapFragment: MapFragment
 ) : LocationListener{
 
     private val MIN_TIME = 60000L // 60 seconds for updating location
@@ -32,10 +31,10 @@ class LocationService(
     private val fusedLocationProviderClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     init {
-        setupLocationManager(context as Activity, mapFragment)
+        setupLocationManager(context as Activity)
     }
 
-    private fun setupLocationManager(activity : Activity, fragment : MapFragment){
+    private fun setupLocationManager(activity : Activity){
         // Initialize locationManager using getSystemService
         locationManager = activity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 

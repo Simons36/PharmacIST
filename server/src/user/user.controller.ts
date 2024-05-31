@@ -38,7 +38,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('favorite')
+  @Get('favorites')
   @HttpCode(200)
   async getFavoritePharmacies(@Req() req: AuthenticatedRequest) {
     return await this.userService.getFavoritePharmacies(req.user.username);

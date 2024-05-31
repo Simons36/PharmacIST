@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.call.receive
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -34,7 +35,6 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.service.MedicineServiceImpl
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
@@ -137,6 +137,22 @@ object PharmacyServiceImpl : ParmacyService {
         return file.absolutePath
 
     }
+
+    override suspend fun getPharmacyByName(pharmacyName: String, context: Context): PharmacyDto {
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val getPharmacyByNameUrl = "$apiUrl/pharmacy/get/$pharmacyName"
+
+        try {
+            val response: HttpResponse = this.httpClient.get(getPharmacyByNameUrl)
+
+            val responseBody = response.body<String>()
+            val pharmacyJson = Json.decodeFromString<PharmacyDto>(responseBody)
+            return pharmacyJson
+        } catch (e: Exception) {
+            throw RuntimeException("Error getting pharmacy by name: ${e.message}")
+        }
+    }
+
 
     override suspend fun syncPharmacyInfo(knownVersion : Int, context: Context) : UpdatePharmaciesStatusResponse{
         val apiUrl: String = ConfigClass.getUrl(context)

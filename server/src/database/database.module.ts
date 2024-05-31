@@ -11,7 +11,7 @@ import { UserModule } from 'src/user/user.module';
     MongooseModule.forRootAsync({
       imports: [AppConfigModule],
       useFactory: async (configService: AppConfigService) => {
-        const uri = `mongodb://${configService.mongoUsername}:${configService.mongoPassword}@${configService.mongoHost}:${configService.mongoPort}/`;
+        const uri = `mongodb://${configService.mongoUsername}${configService.mongoPassword}${configService.mongoHost}:${configService.mongoPort}/`;
         const options = {
         };
 

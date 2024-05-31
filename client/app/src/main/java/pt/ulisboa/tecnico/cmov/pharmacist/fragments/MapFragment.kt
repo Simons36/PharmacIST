@@ -126,7 +126,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
         if (checkLocationPermission()) {
             mapHelper = MapHelper(requireContext(), googleMap, resources)
-            locationService = LocationService(requireActivity(), mapHelper, this)
+            locationService = LocationService(requireActivity(), mapHelper)
 
             setupMap()
 

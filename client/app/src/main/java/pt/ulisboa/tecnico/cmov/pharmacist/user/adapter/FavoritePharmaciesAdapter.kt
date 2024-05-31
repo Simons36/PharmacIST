@@ -7,7 +7,15 @@ import androidx.recyclerview.widget.RecyclerView
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
-class PharmacyAdapter(private val pharmacies: List<PharmacyDto>, private val userLocation: Location) : RecyclerView.Adapter<PharmacyAdapter.ViewHolder>() {
+class PharmacyAdapter(
+    private var pharmacies: List<PharmacyDto>,
+    private val userLocation: Location?
+) : RecyclerView.Adapter<PharmacyAdapter.ViewHolder>() {
+
+    fun updatePharmacies(newPharmacies: List<PharmacyDto>) {
+        pharmacies = newPharmacies
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_pharmacy_card, parent, false)
@@ -16,7 +24,7 @@ class PharmacyAdapter(private val pharmacies: List<PharmacyDto>, private val use
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val pharmacy = pharmacies[position]
-        holder.bind(pharmacy)
+        holder.bind(pharmacy, userLocation)
     }
 
     override fun getItemCount(): Int {
@@ -24,25 +32,25 @@ class PharmacyAdapter(private val pharmacies: List<PharmacyDto>, private val use
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val medicineNameTextView: TextView = itemView.findViewById(R.id.medicineNameTextView)
-        private val closestPharmacyNameTextView: TextView = itemView.findViewById(R.id.closestPharmacyNameTextView)
-        private val pharmacyDistanceView: TextView = itemView.findViewById(R.id.pharmacyAddressView)
+        private val pharmacyNameTextView: TextView = itemView.findViewById(R.id.pharmacyNameTextView)
+        private val pharmacyAddressTextView: TextView = itemView.findViewById(R.id.closestAddressNameTextView)
+        private val distanceTextView: TextView = itemView.findViewById(R.id.pharmacyDistanceView)
 
-        fun bind(pharmacy: PharmacyDto) {
-            medicineNameTextView.text = pharmacy.name
-            closestPharmacyNameTextView.text = pharmacy.address
+        fun bind(pharmacy: PharmacyDto, userLocation: Location?) {
+            pharmacyNameTextView.text = pharmacy.name
+            pharmacyAddressTextView.text = pharmacy.address
 
-            // Calculate distance here using userLocation and pharmacy's address
-            val distance = pharmacy.address?.let { calculateDistance(userLocation, it) }
-            pharmacyDistanceView.text = distance.toString() // Convert distance to string
-        }
-
-        // Function to calculate distance between userLocation and pharmacy's address
-        private fun calculateDistance(userLocation: Location, pharmacyAddress: String): Double {
-            // Implement your logic to calculate distance
-            // You can use libraries like Google Maps API or implement your own logic here
-            // For demonstration purposes, let's assume a constant distance for now
-            return 5.0 // Return a constant value for demonstration
+            if (userLocation != null) {
+                val pharmacyLocation = Location("").apply {
+                    latitude = pharmacy.latitude
+                    longitude = pharmacy.longitude
+                }
+                val distanceInMeters = userLocation.distanceTo(pharmacyLocation)
+                val distanceInKm = distanceInMeters / 1000
+                distanceTextView.text = String.format("%.2f km", distanceInKm)
+            } else {
+                distanceTextView.text = "Unknown distance"
+            }
         }
     }
 }
