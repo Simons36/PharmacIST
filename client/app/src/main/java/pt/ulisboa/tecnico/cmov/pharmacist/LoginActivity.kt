@@ -4,15 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.AuthenticationServiceImpl
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.helper.PharmacyInfoDbHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
 
 class LoginActivity : AppCompatActivity() {

@@ -7,6 +7,7 @@ import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 data class UpdatePharmaciesStatusResponse(
     val remove : List<PharmacyDto>,
     val add : List<PharmacyDto>,
+    val favorite : List<String>,
     val version : Int
 ){
     override fun toString(): String {

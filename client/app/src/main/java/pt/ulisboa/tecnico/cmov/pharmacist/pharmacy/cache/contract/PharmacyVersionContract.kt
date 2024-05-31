@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.contract
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.contract
 
 import android.provider.BaseColumns
 

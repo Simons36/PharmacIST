@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StyleSpan
-import android.widget.Button
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -18,7 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.helper.PharmacyInfoDbHelper
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.helper.PharmacyInfoDbHelper
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
 import java.io.File
@@ -27,12 +27,14 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
 
     private lateinit var pharmacyInfoDbHelper : PharmacyInfoDbHelper
 
+
     private lateinit var pharmacyNameTextView: TextView
     private lateinit var pharmacyAddressTextView: TextView
     private lateinit var pharmacyLatitudeTextView: TextView
     private lateinit var pharmacyLongitudeTextView: TextView
     private lateinit var imageViewPhoto : ImageView
     private lateinit var goToLocationButton : FloatingActionButton
+    private lateinit var favIconButton : ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +93,9 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
                 setResult(Activity.RESULT_OK, data)
                 finish()
             }
+
+            // Init favicon
+            pharmacy!!.isFavorite?.let { initFavIcon(pharmacyName, it) }
 
             if(photoJob != null){
                 photoPath = photoJob.await()
@@ -167,6 +172,55 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
         spannableStringLatLng.setSpan(boldSpan, 0, 10, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
         pharmacyLongitudeTextView.text = spannableStringLatLng
+    }
+
+    private fun initFavIcon(pharmacyName : String, isFavorite : Boolean){
+        favIconButton = findViewById<ImageView>(R.id.favIcon)
+        var varIsFavorite = isFavorite
+        if(varIsFavorite) {
+            favIconButton.setImageResource(R.drawable.fav_icon_full)
+        }
+        favIconButton.setOnClickListener {
+            if(varIsFavorite){
+                lifecycleScope.launch {
+                    try {
+                        PharmacyServiceImpl.removeFavoritePharmacy(pharmacyName, applicationContext)
+
+                    }catch (e: Exception) {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to remove pharmacy from favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e("DEBUG", e.toString())
+                        return@launch
+                    }
+                    favIconButton.setImageResource(R.drawable.fav_icon_border)
+                    pharmacyInfoDbHelper.setPharmacyFavorite(pharmacyName, false)
+                    varIsFavorite = false
+                }
+            }else{
+                lifecycleScope.launch {
+
+                    try {
+
+                        PharmacyServiceImpl.addFavoritePharmacy(pharmacyName, applicationContext)
+
+                    }catch (e: Exception) {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to add pharmacy to favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e("DEBUG", e.toString())
+                        return@launch
+                    }
+                    favIconButton.setImageResource(R.drawable.fav_icon_full)
+                    pharmacyInfoDbHelper.setPharmacyFavorite(pharmacyName, true)
+                    varIsFavorite = true
+                }
+            }
+        }
     }
 
 }

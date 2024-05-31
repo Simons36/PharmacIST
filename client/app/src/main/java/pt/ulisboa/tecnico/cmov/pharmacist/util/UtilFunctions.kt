@@ -57,16 +57,18 @@ class UtilFunctions {
             return directory.absolutePath + "/" + imageFilename
         }
 
-//        private fun loadImageFromStorage(path: String, filename : String, activity: Activity) {
-//            try {
-//                val f = File(path, filename)
-//                val b = BitmapFactory.decodeStream(FileInputStream(f))
-//                val img: ImageView = activity.findViewById(R.id.imgPicker)
-//                img.setImageBitmap(b)
-//            } catch (e: FileNotFoundException) {
-//                e.printStackTrace()
-//            }
-//        }
+        fun saveJwtTokenToSharedPreferences(jwtToken: String, context: Context) {
+            val sharedPref = context.getSharedPreferences("jwtToken", Context.MODE_PRIVATE) ?: return
+            with (sharedPref.edit()) {
+                putString("jwtToken", jwtToken)
+                commit()
+            }
+        }
+
+        fun getJwtTokenFromSharedPreferences(context: Context): String? {
+            val sharedPref = context.getSharedPreferences("jwtToken", Context.MODE_PRIVATE)
+            return sharedPref.getString("jwtToken", null)
+        }
 
         fun sendHttpRequest(
             providedUrl: String,
