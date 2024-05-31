@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, HttpCode, UploadedFile, Body, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Param, HttpCode, UploadedFile, Body, UseInterceptors, Query } from '@nestjs/common';
 import { MedicineService } from './medicine.service';
 import { MedicineDto } from './dto/medicine.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -25,6 +25,11 @@ export class MedicineController {
     @Get('all')
     getAllMedicines() {
         return this.medicineService.getAllMedicines();
+    }
+
+    @Get('search')
+    searchMedicines(@Query('query') query: string) {
+        return this.medicineService.searchMedicines(query);
     }
 
 }
