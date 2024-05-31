@@ -56,7 +56,12 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
 
             if(photoPath == null){ // if photo is not in cache
                 photoJob = async{
-                    PharmacyServiceImpl.getPharmacyPhoto(pharmacyName, applicationContext)
+                    try {
+                        PharmacyServiceImpl.getPharmacyPhoto(pharmacyName, applicationContext)
+                    }catch (e: Exception){
+                        Log.e("DEBUG", e.toString())
+                        return@async null.toString()
+                    }
                 }
             }else{
                 // load photo
@@ -99,6 +104,9 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
 
             if(photoJob != null){
                 photoPath = photoJob.await()
+                if(photoPath == null.toString()){
+                    return@launch
+                }
                 val photo = File(photoPath).readBytes()
                 imageViewPhoto.setImageBitmap(BitmapFactory.decodeByteArray(photo, 0, photo.size))
 

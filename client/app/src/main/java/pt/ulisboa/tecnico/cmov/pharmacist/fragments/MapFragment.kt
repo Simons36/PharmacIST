@@ -4,13 +4,20 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +26,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Task
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -30,8 +39,14 @@ import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.helper.PharmacyInfoDbHelper
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
+import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.PlaceAPI
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.adapter.PlacesAutoCompleteAdapter
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.model.Place
+import java.io.IOException
 import kotlin.concurrent.thread
+
 
 class MapFragment : Fragment(), OnMapReadyCallback{
 
@@ -53,6 +68,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     private lateinit var addPharmacyButton : Button
     private lateinit var cancelButton : Button
     private lateinit var pickLocationButton : Button
+    private lateinit var searchAddress : AutoCompleteTextView
 
     private var isForPickLocation = false;
 
@@ -88,6 +104,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         setupCancelButton(view);
         setupPickLocationButton(view);
 
+
         initPharmacyInfoPanelLauncher()
         initAddPharmacyLauncher()
 
@@ -113,6 +130,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
             setupMap()
 
+            setupSearchAddress(requireView());
 
             thread {
                 updatePharmacies()
@@ -253,6 +271,43 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         }
         checkIfPickLocationButtonShouldBeEnabled()
     }
+
+    private fun setupSearchAddress(view : View) {
+        searchAddress = view.findViewById(R.id.idSearchView)
+
+        // Create api for geocoding
+        val placesApi = PlaceAPI
+                        .Builder()
+                        .apiKey(ConfigClass.getValueFromAndroidManifest(requireContext(), "com.google.android.geo.API_KEY"))
+                        .build(requireContext())
+
+        // Get current position
+        val lastKnownLocation : Task<Location>? = locationService.fetchLastKnownLocation()?.addOnSuccessListener { location ->
+
+            placesApi.locationBiasLocation = LatLng(location.latitude, location.longitude)
+
+            placesApi.locationBiasRadius = 100000 // 100 km
+            searchAddress.setAdapter(PlacesAutoCompleteAdapter(requireContext(), placesApi))
+
+            searchAddress.onItemClickListener =
+                AdapterView.OnItemClickListener { parent, _, position, _ ->
+                    val place = parent.getItemAtPosition(position) as Place
+                    val addressList = Geocoder(requireContext()).getFromLocationName(place.description, 1)
+                    if(!addressList.isNullOrEmpty()){
+                        val address = addressList[0]
+                        val loc = Location("Search location")
+                        loc.latitude = address.latitude
+                        loc.longitude = address.longitude
+                        mapHelper.moveCamera(loc, 15f)
+                    }else{
+                        Toast.makeText(requireContext(), "Address not found", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
+
+
+    }
+
 
 
     fun flipToPickLocationMode() {
