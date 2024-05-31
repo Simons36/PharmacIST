@@ -1,29 +1,52 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.fragments
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.SearchView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Task
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.AddPharmacyActivity
+import pt.ulisboa.tecnico.cmov.pharmacist.PharmacyInfoPanelActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.service.PharmacyInfoDbServiceImpl
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.helper.PharmacyInfoDbHelper
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
+import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.PlaceAPI
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.adapter.PlacesAutoCompleteAdapter
+import pt.ulisboa.tecnico.cmov.pharmacist.util.placesautocomplete.model.Place
+import java.io.IOException
+import kotlin.concurrent.thread
+
 
 class MapFragment : Fragment(), OnMapReadyCallback{
 
@@ -45,6 +68,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     private lateinit var addPharmacyButton : Button
     private lateinit var cancelButton : Button
     private lateinit var pickLocationButton : Button
+    private lateinit var searchAddress : AutoCompleteTextView
 
     private var isForPickLocation = false;
 
@@ -52,6 +76,15 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     // (so he doesnt place more than one markers)
     private var hasPickedLocation = false;
     private var pickedLocation : LatLng? = null;
+
+    // To communicate with cache
+    private lateinit var pharmacyCache : PharmacyInfoDbHelper
+
+    // Pharmacy Info Panel launcher
+    private lateinit var pharmacyInfoPanelLauncher : ActivityResultLauncher<Intent>
+
+    // Add pharamcy launcher
+    private lateinit var addPharmacyLauncher : ActivityResultLauncher<Intent>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,6 +104,10 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         setupCancelButton(view);
         setupPickLocationButton(view);
 
+
+        initPharmacyInfoPanelLauncher()
+        initAddPharmacyLauncher()
+
         if(arguments != null){
 
             val mapMode = arguments?.getInt("mapMode")
@@ -79,18 +116,43 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             }
         }
 
+        pharmacyCache = PharmacyInfoDbHelper(requireContext())
+
         return view
     }
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        mapHelper = MapHelper(requireContext(), googleMap, resources)
-        locationService = LocationService(requireActivity(), mapHelper, this)
+        if (checkLocationPermission()) {
+            mapHelper = MapHelper(requireContext(), googleMap, resources)
+            locationService = LocationService(requireActivity(), mapHelper, this)
 
-        setupMap()
+            setupMap()
 
-        updatePharmacies()
+            setupSearchAddress(requireView());
+
+            thread {
+                updatePharmacies()
+            }
+
+            googleMap.setOnMarkerClickListener { marker ->
+                val markerTag = marker.tag as? String
+
+                if(markerTag == MapHelper.PHARMACY_TAG){
+                    val pharmacyName = marker.title
+                    val intent = Intent(requireContext(), PharmacyInfoPanelActivity::class.java)
+                    intent.putExtra("pharmacyName", pharmacyName)
+                    pharmacyInfoPanelLauncher.launch(intent)
+                }
+
+                false
+            }
+
+        } else {
+            requestLocationPermission();
+        }
+
 
     }
 
@@ -111,19 +173,46 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         }
     }
 
+    private fun initPharmacyInfoPanelLauncher(){
+        pharmacyInfoPanelLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                val location = Location("Pharmacy location")
+                location.latitude = result.data?.getDoubleExtra("latitude", 0.0)!!
+                location.longitude = result.data?.getDoubleExtra("longitude", 0.0)!!
+                mapHelper.moveCamera(location, 15f)
+            }
+        }
+    }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    private fun initAddPharmacyLauncher(){
+        addPharmacyLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                updatePharmacies()
+
+            }
+        }
+    }
+
+
+    private fun checkLocationPermission(): Boolean {
+        val context = context ?: return false
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestLocationPermission() {
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), FINE_PERMISSION_CODE)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == FINE_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setupMap()
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // Permission granted
+                onMapReady(googleMap)
             } else {
-                Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show()
+                // Permission denied, handle appropriately (e.g., disable location functionality)
+                Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -151,7 +240,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
             // Navigate to AddPharmacyActivity
             val intent = Intent(requireContext(), AddPharmacyActivity::class.java)
             intent.putExtra("lastKnownLocation", locationService.getLastKnownLocation())
-            startActivity(intent)
+            addPharmacyLauncher.launch(intent)
 
         }
     }
@@ -182,6 +271,43 @@ class MapFragment : Fragment(), OnMapReadyCallback{
         }
         checkIfPickLocationButtonShouldBeEnabled()
     }
+
+    private fun setupSearchAddress(view : View) {
+        searchAddress = view.findViewById(R.id.idSearchView)
+
+        // Create api for geocoding
+        val placesApi = PlaceAPI
+                        .Builder()
+                        .apiKey(ConfigClass.getValueFromAndroidManifest(requireContext(), "com.google.android.geo.API_KEY"))
+                        .build(requireContext())
+
+        // Get current position
+        val lastKnownLocation : Task<Location>? = locationService.fetchLastKnownLocation()?.addOnSuccessListener { location ->
+
+            placesApi.locationBiasLocation = LatLng(location.latitude, location.longitude)
+
+            placesApi.locationBiasRadius = 100000 // 100 km
+            searchAddress.setAdapter(PlacesAutoCompleteAdapter(requireContext(), placesApi))
+
+            searchAddress.onItemClickListener =
+                AdapterView.OnItemClickListener { parent, _, position, _ ->
+                    val place = parent.getItemAtPosition(position) as Place
+                    val addressList = Geocoder(requireContext()).getFromLocationName(place.description, 1)
+                    if(!addressList.isNullOrEmpty()){
+                        val address = addressList[0]
+                        val loc = Location("Search location")
+                        loc.latitude = address.latitude
+                        loc.longitude = address.longitude
+                        mapHelper.moveCamera(loc, 15f)
+                    }else{
+                        Toast.makeText(requireContext(), "Address not found", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
+
+
+    }
+
 
 
     fun flipToPickLocationMode() {
@@ -223,39 +349,73 @@ class MapFragment : Fragment(), OnMapReadyCallback{
     }
 
     private fun updatePharmacies(){
-        var removeAndAddPair : Pair<List<PharmacyDto>, List<PharmacyDto>>? = null
+        var updatePharmacyInfoResponse : UpdatePharmaciesStatusResponse? = null
 
         lifecycleScope.launch {
 
+            val syncJob = async {
+                syncMapWithCache()
+            }
+
             try {
-                removeAndAddPair = PharmacyServiceImpl.updatePharmacyInfo(PharmacyInfoDbServiceImpl.getCachedPharmaciesInfo(requireContext()), requireContext())
-            }catch (e : RuntimeException){
-                Toast.makeText(requireContext(), "Error updating pharmacies, you might be seeing outdated results", Toast.LENGTH_SHORT).show()
+                updatePharmacyInfoResponse = PharmacyServiceImpl.syncPharmacyInfo(
+                    pharmacyCache.getLatestVersion(),
+                    requireContext()
+                )
+            } catch (e: RuntimeException) {
+                Toast.makeText(
+                    requireContext(),
+                    "Error updating pharmacies, you might be seeing outdated results",
+                    Toast.LENGTH_SHORT
+                ).show()
+                e.printStackTrace()
                 return@launch
             }
 
+            val removeList = updatePharmacyInfoResponse!!.remove
+            val addList = updatePharmacyInfoResponse!!.add
+            val favoritePharmacies = updatePharmacyInfoResponse!!.favorite
+
+            for(pharmacy in addList){
+                Log.i("DEBUG", "Pharmacy to add: ${pharmacy.name}")
+            }
+
+            // Wait for the syncJob to finish
+            syncJob.await()
+
+            // Update map and cache
+            for (pharmacy in removeList) {
+                mapHelper.removeDefaultMarker(pharmacy.name)
+                pharmacyCache.removePharmacyInfoFromCache(pharmacy)
+            }
+
+            for (pharmacy in addList) {
+                mapHelper.addDefaultMarker(
+                    LatLng(pharmacy.latitude, pharmacy.longitude),
+                    pharmacy.name,
+                    pharmacy.name
+                )
+                pharmacyCache.addPharmacyInfoToCache(pharmacy)
+            }
+
+            pharmacyCache.unfavoriteAllPharmacies()
+
+            for (pharmacy in favoritePharmacies) {
+                pharmacyCache.setPharmacyFavorite(pharmacy, true)
+            }
+
+            //Write version to database
+            pharmacyCache.setLatestVersion(updatePharmacyInfoResponse!!.version)
         }
 
-        if(removeAndAddPair == null){
-            Toast.makeText(requireContext(), "Error updating pharmacies, you might be seeing outdated results", Toast.LENGTH_SHORT).show()
-            return
-        }
 
-        val removeList = removeAndAddPair!!.first
-        val addList = removeAndAddPair!!.second
+    }
 
-        // Update map and cache
-        for(pharmacy in removeList){
-            mapHelper.removeDefaultMarker(pharmacy.name)
-            PharmacyInfoDbServiceImpl.removePharmacyInfoFromCache(pharmacy, requireContext())
-        }
-
-        for(pharmacy in addList){
+    private fun syncMapWithCache(){
+        val pharmacies = pharmacyCache.getCachedPharmaciesInfo()
+        for(pharmacy in pharmacies){
             mapHelper.addDefaultMarker(LatLng(pharmacy.latitude, pharmacy.longitude), pharmacy.name, pharmacy.name)
-            PharmacyInfoDbServiceImpl.addPharmacyInfoToCache(pharmacy, requireContext())
         }
-
-
     }
 
     companion object{

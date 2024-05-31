@@ -55,6 +55,10 @@
             android:exported="true" >
         </activity>
 
+        <activity
+            android:name=".PharmacyInfoPanelActivity"
+            android:exported="true">
+        </activity>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyB0UcLHpWQXy0aa7OvoD6PXn9MrYCCqOjw" />

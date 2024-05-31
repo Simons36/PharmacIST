@@ -552,6 +552,8 @@ class AddPharmacyActivity() : AppCompatActivity() {
 
         val handler = Handler()
         handler.postDelayed({ // Do something after 5s = 5000ms
+            val data = Intent()
+            setResult(Activity.RESULT_OK, data)
             finish()
         }, TIME_SHOW_ADD_PHARMACY_SUCCESS)
     }

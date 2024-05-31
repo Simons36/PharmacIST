@@ -4,14 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.AuthenticationServiceImpl
-import kotlin.concurrent.thread
 
 
 class LoginActivity : AppCompatActivity() {
@@ -24,7 +22,10 @@ class LoginActivity : AppCompatActivity() {
         val editTextPassword = findViewById<EditText>(R.id.editTextPassword)
         val buttonLogin = findViewById<Button>(R.id.buttonLogin)
 
+
         buttonLogin.setOnClickListener {
+
+
             // Handle login button click
             // Validate username/email and password, then proceed with authentication
 

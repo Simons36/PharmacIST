@@ -9,11 +9,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Pharmacy, PharmacyDocument } from './schemas/pharmacy.schema';
 import { Model } from 'mongoose';
 import { PharmacyVersion } from './schemas/pharmacy-version.schema';
+import { log } from 'console';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class PharmacyService {
   constructor(
     private configService: AppConfigService,
+    private userService: UserService,
     @InjectModel(Pharmacy.name)
     private readonly pharmacyModel: Model<PharmacyDocument>,
     @InjectModel(PharmacyVersion.name)
@@ -135,13 +138,13 @@ export class PharmacyService {
       //get the current version (find greatest version number and increment it by 1)
       let currentVersion = (
         await this.pharmacyVersionModel.findOne().sort({ version: -1 }).exec()
-      ).version;
+      )
       let newVersion: number;
 
       if (!currentVersion) {
         newVersion = 1;
       } else {
-        newVersion = currentVersion + 1;
+        newVersion = currentVersion.version + 1;
       }
 
       //create new version
@@ -151,7 +154,9 @@ export class PharmacyService {
         pharmacyName: pharmacyDto.name,
       });
       await newPharmacyVersion.save();
-    } catch (error) {}
+    } catch (error) {
+      this.logger.log('Error while adding new pharmacy version: ' + error.message);
+    }
 
     this.logger.log('New pharmacy added successfully');
   }
@@ -220,37 +225,58 @@ export class PharmacyService {
   }
 
 
-  async getPharmacySyncByVersion(knownVersionByClien: number) {
+  async getPharmacySyncByVersion(knownVersionByClient: number, username : string) {
     // received number is the version number that the client has
     // need to check all the more recent versions and return the changes (additions and deletions)
-
-    this.logger.log('Received request to get pharmacy sync by version');
-
+    
+    this.logger.log('Received request to get pharmacy sync by version, version number received: ' + knownVersionByClient.toString() + '.');
+    console.log('Username ' + username)
+    
     try {
+
+      // first of all find the user's favorite pharmacies
+      const user = await this.userService.findUser(username);
+      let favoritePharmacies = user.favoritePharmacies;
+
+
       //get the current version (find greatest version number)
-      let currentVersion = (
+      let currentVersionObject = (
         await this.pharmacyVersionModel.findOne().sort({ version: -1 }).exec()
-      ).version;
+      );
+
+      if(!currentVersionObject){
+        // There are no pharmacies currently, return nothing
+        return {
+          version: 0,
+          add: [],
+          remove: [],
+          favoritePharmacies : favoritePharmacies,
+        };
+      }
+
+      let currentVersion = currentVersionObject.version;
 
       if (!currentVersion) {
         return {
           version: 0,
           add: [],
           remove: [],
+          favoritePharmacies : favoritePharmacies,
         };
       }
 
       //if the version is the same as the client's version, return empty lists
-      if (currentVersion === knownVersionByClien) {
+      if (currentVersion === knownVersionByClient) {
         return {
           version: currentVersion,
           add: [],
           remove: [],
+          favorite: favoritePharmacies,
         };
       }
 
       //if the client's version is greater than the current version, return error
-      if (knownVersionByClien > currentVersion) {
+      if (knownVersionByClient > currentVersion) {
         throw new HttpException(
           'Client version is greater than the current version',
           HttpStatus.BAD_REQUEST,
@@ -259,7 +285,7 @@ export class PharmacyService {
 
       //get all versions greater than the client's version
       const versions = await this.pharmacyVersionModel
-        .find({ version: { $gt: knownVersionByClien } })
+        .find({ version: { $gt: knownVersionByClient } })
         .exec();
 
       //create lists of pharmacies to add and remove
@@ -291,13 +317,49 @@ export class PharmacyService {
         }
       }
 
+
       return {
         version: currentVersion,
         add: pharmaciesToAdd,
         remove: pharmaciesToRemove,
+        favorite: favoritePharmacies,
       };
     } catch (error) {
       this.logger.log('Error while getting pharmacy sync by version: ' + error.message);
+      
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getPharmacyPhoto(pharmacyName: string) {
+    this.logger.log('Received request to get pharmacy photo for ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (!pharmacy.photoPath) {
+        throw new HttpException(
+          'Photo not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Read the photo file
+      const fs = require('fs');
+      const photoData = fs.readFileSync(pharmacy.photoPath);
+
+      return photoData;
+    } catch (error) {
+      this.logger.log('Error while getting pharmacy photo: ' + error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

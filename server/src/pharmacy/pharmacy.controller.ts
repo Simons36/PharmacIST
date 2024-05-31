@@ -5,13 +5,21 @@ import {
   HttpCode,
   Param,
   Post,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PharmacyDto } from './dto/pharmacy.dto';
 import { PharmacyService } from './pharmacy.service';
 import { Express } from 'express'; // Use Express namespace for types
+import { AuthGuard } from '@nestjs/passport';
+
+interface AuthenticatedRequest extends Request {
+  user: { username: string };
+}
+
 
 @Controller('pharmacy')
 export class PharmacyController {
@@ -39,8 +47,16 @@ export class PharmacyController {
     return await this.pharmacyService.getUpdatedPharmaciesInfo(pharmaciesDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('sync/version/:version')
-  async getPharmaciesByVersion(@Param('version') version: number) {
-    return await this.pharmacyService.getPharmacySyncByVersion(version);
+  async getPharmaciesByVersion(@Param('version') version: number, @Req() req : AuthenticatedRequest) {
+    let val =  await this.pharmacyService.getPharmacySyncByVersion(version, req.user.username);
+    console.log(val);
+    return val;
+  }
+
+  @Get('photo/:pharmacyName')
+  async getPharmacyPhoto(@Param('pharmacyName') pharmacyName: string) {
+    return await this.pharmacyService.getPharmacyPhoto(pharmacyName);
   }
 }

@@ -6,6 +6,7 @@ import { DatabaseModule } from 'src/database/database.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Pharmacy, PharmacySchema } from './schemas/pharmacy.schema';
 import { PharmacyVersion, PharmacyVersionSchema } from './schemas/pharmacy-version.schema';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PharmacyVersion, PharmacyVersionSchema } from './schemas/pharmacy-versi
     MongooseModule.forFeature([
       { name: PharmacyVersion.name, schema: PharmacyVersionSchema },
     ]),
+    UserModule
   ],
   controllers: [PharmacyController],
   providers: [PharmacyService],
