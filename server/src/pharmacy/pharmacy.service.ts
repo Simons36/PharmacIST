@@ -14,6 +14,7 @@ import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class PharmacyService {
+
   constructor(
     private configService: AppConfigService,
     private userService: UserService,
@@ -331,6 +332,7 @@ export class PharmacyService {
     }
   }
 
+
   async getPharmacyPhoto(pharmacyName: string) {
     this.logger.log('Received request to get pharmacy photo for ' + pharmacyName);
 
@@ -363,5 +365,5 @@ export class PharmacyService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+  
 }

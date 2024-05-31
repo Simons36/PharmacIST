@@ -12,7 +12,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.service.MedicineServiceImpl
-import java.io.File
 
 class MedicineDetailsActivity : AppCompatActivity() {
 
@@ -45,10 +44,9 @@ class MedicineDetailsActivity : AppCompatActivity() {
 
     private fun fetchAndDisplayMedicinePhoto(medicineName: String) {
         lifecycleScope.launch {
-            val medicineService = MedicineServiceImpl() // Create an instance of MedicineServiceImpl
             val photoJob: Deferred<ByteArray?> = async {
                 try {
-                    medicineService.getMedicinePhoto(medicineName, applicationContext) // Call the method on the instance
+                    MedicineServiceImpl.getMedicinePhoto(medicineName, applicationContext) // Call the method on the singleton object
                 } catch (e: Exception) {
                     Log.e("DEBUG", e.toString())
                     null
@@ -65,5 +63,6 @@ class MedicineDetailsActivity : AppCompatActivity() {
             }
         }
     }
+
 
 }

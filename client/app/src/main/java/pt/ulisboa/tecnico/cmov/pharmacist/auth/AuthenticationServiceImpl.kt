@@ -56,6 +56,7 @@ object AuthenticationServiceImpl : AuthenticationService {
                 // Parse JSON string
                 val jsonObject = JSONObject(responseBodyOrExceptionMessage)
                 UtilFunctions.saveJwtTokenToSharedPreferences(jsonObject.getString("access_token"), context)
+                UtilFunctions.saveUsernameToSharedPreferences(jsonObject.getString("username"), context)
                 callback(true, null)
             } else {
                 Log.e("Auth", "Error during login with HTTP status code: $responseCode. Error body: $responseBodyOrExceptionMessage")

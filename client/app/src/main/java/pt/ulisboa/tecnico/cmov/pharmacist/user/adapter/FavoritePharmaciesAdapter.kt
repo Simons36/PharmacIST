@@ -26,7 +26,7 @@ class PharmacyAdapter(private val pharmacies: List<PharmacyDto>, private val use
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val medicineNameTextView: TextView = itemView.findViewById(R.id.medicineNameTextView)
         private val closestPharmacyNameTextView: TextView = itemView.findViewById(R.id.closestPharmacyNameTextView)
-        private val pharmacyAddressView: TextView = itemView.findViewById(R.id.pharmacyAddressView)
+        private val pharmacyDistanceView: TextView = itemView.findViewById(R.id.pharmacyAddressView)
 
         fun bind(pharmacy: PharmacyDto) {
             medicineNameTextView.text = pharmacy.name
@@ -34,7 +34,7 @@ class PharmacyAdapter(private val pharmacies: List<PharmacyDto>, private val use
 
             // Calculate distance here using userLocation and pharmacy's address
             val distance = pharmacy.address?.let { calculateDistance(userLocation, it) }
-            pharmacyAddressView.text = distance.toString() // Convert distance to string
+            pharmacyDistanceView.text = distance.toString() // Convert distance to string
         }
 
         // Function to calculate distance between userLocation and pharmacy's address

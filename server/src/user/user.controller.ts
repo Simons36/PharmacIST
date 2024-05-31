@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
@@ -35,5 +35,12 @@ export class UserController {
       pharmacyName,
       req.user.username,
     );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('favorite')
+  @HttpCode(200)
+  async getFavoritePharmacies(@Req() req: AuthenticatedRequest) {
+    return await this.userService.getFavoritePharmacies(req.user.username);
   }
 }

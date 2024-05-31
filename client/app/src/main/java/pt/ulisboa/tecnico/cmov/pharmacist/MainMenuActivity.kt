@@ -54,7 +54,7 @@ class MainMenuActivity : AppCompatActivity() {
         }
 
         // Set the default selected item
-        bottomNavigationView.selectedItemId = R.id.navigation_profile
+        bottomNavigationView.selectedItemId = R.id.pharmacy_map
     }
 
     //to handle map being requested from add pharmacy activity

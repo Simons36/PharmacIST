@@ -3,14 +3,11 @@ package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service
 import android.content.Context
 import android.util.Log
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
-import io.ktor.client.plugins.logging.Logging
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
-import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.serialization.json.Json
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.Logging
@@ -34,7 +31,9 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import pt.ulisboa.tecnico.cmov.pharmacist.medicine.service.MedicineServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
@@ -135,7 +134,6 @@ object PharmacyServiceImpl : ParmacyService {
         return file.absolutePath
 
     }
-
 
     override suspend fun syncPharmacyInfo(knownVersion : Int, context: Context) : UpdatePharmaciesStatusResponse{
         val apiUrl: String = ConfigClass.getUrl(context)
