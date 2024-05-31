@@ -33,4 +33,9 @@ export class MedicineController {
         return this.medicineService.searchMedicines(query);
     }
 
+    @Get('inventory/:pharmacyName')
+    getPharmacyInventory(@Param('pharmacyName') pharmacyName: string) {
+        return this.medicineService.getPharmacyInventory(pharmacyName);
+    }
+
 }

@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import { PharmacyVersion } from './schemas/pharmacy-version.schema';
 import { log } from 'console';
 import { UserService } from 'src/user/user.service';
+import { MedicineQuantityDto } from 'src/medicine/dto/medicine-quantity.dto';
 
 @Injectable()
 export class PharmacyService {
@@ -399,6 +400,40 @@ export class PharmacyService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+  }
+  async getPharmacyInventory(pharmacyName: string) : Promise<MedicineQuantityDto[]>{
+    this.logger.log('Received request to get pharmacy inventory for ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const medicines  = pharmacy.medicines
+      let medicineQuantities : MedicineQuantityDto[] = [];
+      for(let medicine of medicines){
+
+        //
+
+        medicineQuantities.push({
+          name : medicine.medicineName,
+          quantity : medicine.quantity,
+          purpose : null
+        });
+      }
+
+      return medicineQuantities;
+    } catch (error) {
+      this.logger.log('Error while getting pharmacy inventory: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getPharmacyByName(pharmacyName: string) {
