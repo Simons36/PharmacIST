@@ -32,4 +32,9 @@ export class MedicineController {
         return this.medicineService.searchMedicines(query);
     }
 
+    @Get('photo/:medicineName')
+    async getMedicinePhoto(@Param('medicineName') medicineName: string) {
+        return await this.medicineService.getMedicinePhoto(medicineName);
+    }
+
 }

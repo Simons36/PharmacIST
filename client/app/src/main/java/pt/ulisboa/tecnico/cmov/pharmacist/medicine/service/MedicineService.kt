@@ -9,4 +9,7 @@ interface MedicineService {
     suspend fun searchMedicines(query: String, context: Context): List<MedicineDTO>
 
     suspend fun getAllMedicines(context: Context): List<MedicineDTO>
+
+    suspend fun getMedicinePhoto(medicineName: String, context: Context): ByteArray
+
 }
