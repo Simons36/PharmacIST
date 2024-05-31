@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import { PharmacyVersion } from './schemas/pharmacy-version.schema';
 import { log } from 'console';
 import { UserService } from 'src/user/user.service';
+import { MedicineQuantityDto } from 'src/medicine/dto/medicine-quantity.dto';
 
 @Injectable()
 export class PharmacyService {
@@ -403,6 +404,39 @@ export class PharmacyService {
     }
 
   }
+  async getPharmacyInventory(pharmacyName: string) : Promise<MedicineQuantityDto[]>{
+    this.logger.log('Received request to get pharmacy inventory for ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const medicines  = pharmacy.medicines
+      let medicineQuantities : MedicineQuantityDto[] = [];
+      for(let medicine of medicines){
+
+        //
+
+        medicineQuantities.push({
+          name : medicine.medicineName,
+          quantity : medicine.quantity
+        });
+      }
+
+      return medicineQuantities;
+    } catch (error) {
+      this.logger.log('Error while getting pharmacy inventory: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   async getPharmacyByName(pharmacyName: string) {
     this.logger.log('Received request to get pharmacy by name: ' + pharmacyName);
@@ -428,6 +462,88 @@ export class PharmacyService {
       };
     } catch (error) {
       this.logger.log('Error while getting pharmacy by name: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async addStockToPharmacy(pharmacyName: string, medicineName: string, quantity: number) {
+    this.logger.log('Received request to add stock to pharmacy: ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Check if the medicine exists in the pharmacy
+      let medicineAmount = pharmacy.medicines.find(
+        (medicineAmount) => medicineAmount.medicineName === medicineName,
+      );
+
+      if (medicineAmount) {
+        // Medicine exists, add the quantity
+        medicineAmount.quantity += quantity;
+      } else {
+        // Medicine does not exist, create new medicine amount
+        pharmacy.medicines.push({
+          medicineName: medicineName,
+          quantity: quantity,
+        });
+      }
+
+      await pharmacy.save();
+    } catch (error) {
+      this.logger.log('Error while adding stock to pharmacy: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async removeStockFromPharmacy(pharmacyName: string, medicineName: string, quantity: number) {
+    this.logger.log('Received request to remove stock from pharmacy: ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Check if the medicine exists in the pharmacy
+      let medicineAmount = pharmacy.medicines.find(
+        (medicineAmount) => medicineAmount.medicineName === medicineName,
+      );
+
+      if (medicineAmount) {
+        // Medicine exists, remove the quantity
+        medicineAmount.quantity -= quantity;
+
+        if (medicineAmount.quantity < 0) {
+          throw new HttpException(
+            'Not enough stock to remove',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      } else {
+        throw new HttpException(
+          'Medicine not found in pharmacy',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      await pharmacy.save();
+    } catch (error) {
+      this.logger.log('Error while removing stock from pharmacy: ' + error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

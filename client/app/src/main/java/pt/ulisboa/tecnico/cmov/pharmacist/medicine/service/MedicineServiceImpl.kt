@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.medicine.service
 
 import android.content.Context
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
@@ -27,6 +28,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.AddMedicineDto
+import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.DisplayMedicineDto
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.MedicineDTO
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.exception.MedicineAlreadyExistsException
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.exception.NoSuchPharmacyException
@@ -132,6 +134,8 @@ object MedicineServiceImpl : MedicineService {
             }
         }
     }
+
+
 
 
 

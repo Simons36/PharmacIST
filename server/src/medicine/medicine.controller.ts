@@ -3,6 +3,7 @@ import { MedicineService } from './medicine.service';
 import { MedicineDto } from './dto/medicine.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AddMedicineDto } from './dto/add-medicine.dto';
+import { StockDto } from './dto/stock.dto';
 
 @Controller('medicine')
 export class MedicineController {
@@ -36,6 +37,22 @@ export class MedicineController {
     @Get('photo/:medicineName')
     async getMedicinePhoto(@Param('medicineName') medicineName: string) {
         return await this.medicineService.getMedicinePhoto(medicineName);
+      
+    @Get('inventory/:pharmacyName')
+    getPharmacyInventory(@Param('pharmacyName') pharmacyName: string) {
+        return this.medicineService.getPharmacyInventory(pharmacyName);
+    }
+
+    @Post('stock/add')
+    addMedicineToPharmacy(@Body() stockDto : StockDto) {
+        let thing =  this.medicineService.addMedicineToPharmacy(stockDto.pharmacyName, stockDto.medicineName, stockDto.quantity);
+        console.log(thing);
+        return thing;
+    }
+
+    @Post('stock/remove')
+    removeMedicineFromPharmacy(@Body() stockDto : StockDto) {
+        return this.medicineService.removeMedicineFromPharmacy(stockDto.pharmacyName, stockDto.medicineName, stockDto.quantity);
     }
 
 }

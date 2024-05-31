@@ -9,6 +9,7 @@ export class MedicineDto{
     @IsString()
     readonly purpose: string;
 
+
     @IsOptional()
     @IsString()
     readonly photoPath?: string;

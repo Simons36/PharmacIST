@@ -38,6 +38,8 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
     private lateinit var goToLocationButton : FloatingActionButton
     private lateinit var favIconButton : ImageView
     private lateinit var createMedicineButton : Button
+    private lateinit var checkInventoryButton : Button
+    private lateinit var addRemoveStockButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +109,12 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
 
             // Init create medicine button
             initCreateMedicineButton(pharmacyName)
+
+            // Init check inventory button
+            initCheckInventoryButton(pharmacyName)
+
+            // Init add remove stock button
+            addRemoveStockButton(pharmacyName)
 
             // Get photo requested earlier
             if(photoJob != null){
@@ -268,6 +276,24 @@ class PharmacyInfoPanelActivity : AppCompatActivity(){
             val dialog = builder.create()
             dialog.show()
 
+        }
+    }
+
+    private fun initCheckInventoryButton(pharmacyName: String){
+        checkInventoryButton = findViewById<Button>(R.id.btnCheckInventory)
+        checkInventoryButton.setOnClickListener {
+            val intent = Intent(this@PharmacyInfoPanelActivity, InventoryActivity::class.java)
+            intent.putExtra("pharmacyName", pharmacyName)
+            startActivity(intent)
+        }
+    }
+
+    private fun addRemoveStockButton(pharmacyName: String){
+        addRemoveStockButton = findViewById<Button>(R.id.btnAddRemoveStock)
+        addRemoveStockButton.setOnClickListener {
+            val intent = Intent(this@PharmacyInfoPanelActivity, AddRemoveStockActivity::class.java)
+            intent.putExtra("pharmacyName", pharmacyName)
+            startActivity(intent)
         }
     }
 

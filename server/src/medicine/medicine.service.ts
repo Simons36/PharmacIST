@@ -6,6 +6,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { MedicineDto } from "./dto/medicine.dto";
 import { AddMedicineDto } from "./dto/add-medicine.dto";
 import { PharmacyService } from "src/pharmacy/pharmacy.service";
+import { MedicineQuantityDto } from "./dto/medicine-quantity.dto";
 
 @Injectable()
 export class MedicineService {
@@ -51,8 +52,12 @@ export class MedicineService {
         photoPath: addMedicineDto.photoPath,
       };
 
-      const newMedicine = new this.medicineModel(medicineDto);
-      await newMedicine.save();
+      try{
+        const newMedicine = new this.medicineModel(medicineDto);
+        await newMedicine.save();
+
+      }catch(error){
+      }
 
       let quantity = addMedicineDto.quantity;
       await this.pharmacyService.addQuantityOfMedicineToPharmacy(addMedicineDto.pharmacyName, addMedicineDto.name, quantity);
@@ -136,7 +141,54 @@ export class MedicineService {
         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
+  async getPharmacyInventory(pharmacyName: string): Promise<MedicineQuantityDto[]> {
+    try {
+      let medicineQuantities = await this.pharmacyService.getPharmacyInventory(pharmacyName);
 
+      
+      //add purpose to each element of medicineQuantities
+      let medicineDtos : MedicineQuantityDto[] = [];
+      for (let medicineQuantity of medicineQuantities) {
+        let medicine = await this.medicineModel.findOne({ name: medicineQuantity.name }).exec();
+        let medicineDto: MedicineQuantityDto = {
+          name: medicineQuantity.name,
+          quantity: medicineQuantity.quantity
+        };
+        medicineDtos.push(medicineDto);
+      }
+
+      this.logger.log(`Retrieved pharmacy inventory for ${pharmacyName} successfully.`);
+
+      return medicineDtos;
+    } catch (error) {
+      this.logger.error("Error getting pharmacy inventory: " + error);
+      
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async addMedicineToPharmacy(pharmacyName: string, medicineName: string, quantity: number): Promise<void> {
+    try {
+      await this.pharmacyService.addStockToPharmacy(pharmacyName, medicineName, quantity);
+      this.logger.log(`Added ${quantity} of ${medicineName} to ${pharmacyName} inventory successfully.`);
+    } catch (error) {
+      this.logger.error("Error adding medicine to pharmacy: " + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async removeMedicineFromPharmacy(pharmacyName: string, medicineName: string, quantity: number): Promise<void> {
+    try {
+      await this.pharmacyService.removeStockFromPharmacy(pharmacyName, medicineName, quantity);
+      this.logger.log(`Removed ${quantity} of ${medicineName} from ${pharmacyName} inventory successfully.`);
+    } catch (error) {
+      this.logger.error("Error removing medicine from pharmacy: " + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  
 
   private mapToDto(medicine: MedicineDocument): MedicineDto {
     return {
