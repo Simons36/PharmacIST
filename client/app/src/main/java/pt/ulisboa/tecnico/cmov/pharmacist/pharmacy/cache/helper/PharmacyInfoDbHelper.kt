@@ -252,6 +252,38 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
         db.update(PharmacyInfoEntry.TABLE_NAME, values, null, null)
     }
 
+    override fun isPharmacyFavorite(pharmacyName: String) : Boolean {
+        val db = this.readableDatabase
+
+        val projection = arrayOf(
+            PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE
+        )
+
+        val selection = "${PharmacyInfoEntry.COLUMN_NAME_NAME} = ?"
+        val selectionArgs = arrayOf(pharmacyName)
+
+        val cursor = db.query(
+            PharmacyInfoEntry.TABLE_NAME,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        var isFavorite = false
+        with(cursor) {
+            while (moveToNext()) {
+                isFavorite = getInt(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE)) == 1
+            }
+        }
+
+        cursor.close()
+
+        return isFavorite
+    }
+
 
     companion object {
         const val DATABASE_VERSION = 1

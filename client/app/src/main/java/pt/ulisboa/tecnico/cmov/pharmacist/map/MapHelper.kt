@@ -56,6 +56,21 @@ class MapHelper(private val context: Context, private val googleMap: GoogleMap, 
         marker.tag = PHARMACY_TAG
         defaultMarkersMap[id] = marker
     }
+    fun addFavoriteMarker(latLng: LatLng, title: String, id : String) {
+        val drawable =
+            ResourcesCompat.getDrawable(resources, R.drawable.fav_icon_full, null)
+                ?: return
+
+        // Resize the bitmap to desired dimensions
+        val scaledBitmap = Bitmap.createScaledBitmap(UtilFunctions.drawableToBitmap(drawable), 120, 120, false)
+
+        // Create a BitmapDescriptor from the resized bitmap
+        val icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+
+        val marker = googleMap.addMarker(MarkerOptions().position(latLng).icon(icon).title(title)) ?: throw ErrorAddingMarkerException()
+        marker.tag = PHARMACY_TAG
+        defaultMarkersMap[id] = marker
+    }
 
     fun moveDefaultMarker(id: String, latLng: LatLng) {
         defaultMarkersMap[id]?.position = latLng
