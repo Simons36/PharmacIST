@@ -401,4 +401,32 @@ export class PharmacyService {
 
   }
 
+  async getPharmacyByName(pharmacyName: string) {
+    this.logger.log('Received request to get pharmacy by name: ' + pharmacyName);
+
+    try {
+      const pharmacy = await this.pharmacyModel
+        .findOne({ name: pharmacyName })
+        .exec();
+
+      if (!pharmacy) {
+        throw new HttpException(
+          'Pharmacy not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        name : pharmacy.name,
+        address : pharmacy.address,
+        latitude : pharmacy.latitude,
+        longitude : pharmacy.longitude,
+        isFavorite : true,
+      };
+    } catch (error) {
+      this.logger.log('Error while getting pharmacy by name: ' + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }
