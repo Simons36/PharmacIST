@@ -27,5 +27,7 @@ interface PharmacyInfoDbInterface {
 
     fun unfavoriteAllPharmacies()
 
+    fun isPharmacyFavorite(pharmacyName: String) : Boolean
+
 
 }

@@ -1,0 +1,196 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp">
+
+    <!-- Title TextView -->
+    <TextView
+        android:id="@+id/titleCreateNewMedicine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create New Medicine"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@color/white"/>
+
+    <!-- Name Label TextView -->
+    <TextView
+        android:id="@+id/labelName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name:"
+        android:textSize="16sp"
+        android:layout_below="@id/titleCreateNewMedicine"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Name EditText -->
+    <EditText
+        android:id="@+id/editTextMedicineName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelName"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter medicine name"
+        android:inputType="text"
+        app:backgroundTint="@color/white" />
+
+    <!-- Quantity Label TextView -->
+    <TextView
+        android:id="@+id/labelQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quantity:"
+        android:textSize="16sp"
+        android:layout_below="@id/editTextMedicineName"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Quantity EditText -->
+
+    <EditText
+        android:id="@+id/editTextQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelQuantity"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter quantity"
+        android:inputType="number"
+        app:backgroundTint="@color/white" />
+
+    <!-- Puropose/Preferred use Label TextView -->
+    <TextView
+        android:id="@+id/labelPurpose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Purpose/Preferred use:"
+        android:textSize="16sp"
+        android:layout_below="@id/editTextQuantity"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Purpose/Preferred use EditText -->
+    <EditText
+        android:id="@+id/editTextPurpose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelPurpose"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter purpose/preferred use"
+        android:inputType="textMultiLine"
+        android:scrollbars="vertical"
+        android:lines="4"
+        android:gravity="top|start"
+        app:backgroundTint="@color/white" />
+
+    <!-- Photo Label TextView -->
+    <TextView
+        android:id="@+id/labelPhoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Photo:"
+        android:textSize="16sp"
+        android:layout_below="@id/editTextPurpose"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- Photo Buttons Container -->
+    <LinearLayout
+        android:id="@+id/photoSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelPhoto"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp">
+
+        <!-- Container for ImageView and Cancel Button -->
+        <RelativeLayout
+            android:id="@+id/photoContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <!-- ImageView for displaying the selected photo -->
+            <ImageView
+                android:id="@+id/imageViewPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_centerInParent="true"
+                android:scaleType="centerCrop"
+                android:layout_margin="20dp"/>
+
+            <!-- Cancel Button -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnCancelPhoto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                app:fabCustomSize="40dp"
+                android:src="@drawable/baseline_close_24"
+                app:backgroundTint="@color/colorPrimary"
+                android:tint="@color/white"
+                android:contentDescription="TODO" />
+
+        </RelativeLayout>
+
+        <!-- Take Picture Button -->
+        <Button
+            android:id="@+id/btnTakePicture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Take Picture"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/colorPrimary" />
+
+        <!-- Select Photo from Gallery Button -->
+        <Button
+            android:id="@+id/btnOpenGallery"
+    android:windowSoftInputMode="adjustNothing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Photo from Gallery"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/colorPrimary" />
+    </LinearLayout>
+
+
+    <!-- Confirm Button -->
+    <Button
+        android:id="@+id/btnAddMedicine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add New Medicine"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@color/white"/>
+</RelativeLayout>

@@ -7,13 +7,8 @@ import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.logging.Logging
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.serialization.json.Json
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -29,15 +24,12 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
-import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
 import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 import java.io.File
 import java.io.FileOutputStream
@@ -94,7 +86,9 @@ object PharmacyServiceImpl : ParmacyService {
         // 201 Created -> means success
         // 409 Conflict -> means the name is already in use
         if(response.status.value == HttpURLConnection.HTTP_CONFLICT){
-            throw PharmacyNameAlreadyInUse(pharmacy.getName())
+            throw PharmacyNameAlreadyInUse(
+                pharmacy.getName()
+            )
         }else if(response.status.value != HttpURLConnection.HTTP_CREATED){
             throw RuntimeException("Error adding pharmacy: ${response.bodyAsText()}")
         }
