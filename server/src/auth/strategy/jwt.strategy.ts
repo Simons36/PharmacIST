@@ -5,11 +5,15 @@ import * as fs from 'fs';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService : AppConfigService){
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor(private configService: AppConfigService) {
     super({
-        jwtFromRequest : ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey : fs.readFileSync(configService.accessTokenSecretPath)
-    })
-  };
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: fs.readFileSync(configService.accessTokenSecretPath),
+    });
+  }
+
+  validate(payload: any) {
+    return { username: payload.sub };
+  }
 }

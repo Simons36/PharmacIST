@@ -15,13 +15,8 @@ export class UserService {
   async createUser(createUserDto: CreateUserDto): Promise<void> {
     try {
       const newUser = new this.userModel(createUserDto);
-      const savedUser = await newUser.save();
-
-      const returnedDto: UserDto = {
-        username: savedUser.username,
-        email: savedUser.email,
-        password: savedUser.password,
-      };
+      await newUser.save();
+      
     } catch (error) {
       if (error.code === 11000 || error.code === 11001) {
         // Duplicate key error (MongoDB error code for duplicate key)
@@ -49,10 +44,14 @@ export class UserService {
     }
   }
 
-  async findUser(email: string): Promise<UserDto> {
+  async findUser(emailOrUsername: string): Promise<UserDto> {
     try {
-      // Find user by email
-      const user = await this.userModel.findOne({ email }).exec();
+      // Find user by email or username
+      const user = await this.userModel
+        .findOne({
+          $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
+        })
+        .exec();
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -63,12 +62,59 @@ export class UserService {
         username: user.username,
         email: user.email,
         password: user.password,
+        favoritePharmacies: user.favoritePharmacies,
         // Add other properties from user as needed
       };
 
       return userDto;
     } catch (error) {
       throw error; // Rethrow any errors
+    }
+  }
+
+  async addFavoritePharmacy(pharmacyName: string, username: string) {
+    try {
+      // Find user by username
+      const user = await this.userModel.findOne({ username }).exec();
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Add pharmacy to favorites
+      user.favoritePharmacies.push(pharmacyName);
+      await user.save();
+    } catch (error) {
+      throw new HttpException(
+        'Error adding favorite pharmacy',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async removeFavoritePharmacy(pharmacyName: string, username: string) {
+    try {
+      // Find user by username
+      const user = await this.userModel
+        .findOne({
+          username,
+        })
+        .exec();
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Remove pharmacy from favorites
+      user.favoritePharmacies = user.favoritePharmacies.filter(
+        (pharmacy) => pharmacy !== pharmacyName,
+      );
+      await user.save();
+    } catch (error) {
+      throw new HttpException(
+        'Error removing favorite pharmacy',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
