@@ -1,12 +1,12 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.helper
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.helper
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.contract.PharmacyInfoContract.PharmacyInfoEntry
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.contract.PharmacyVersionContract.PharmacyVersionEntry
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.`interface`.PharmacyInfoDbInterface
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.contract.PharmacyInfoContract.PharmacyInfoEntry
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.contract.PharmacyVersionContract.PharmacyVersionEntry
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.`interface`.PharmacyInfoDbInterface
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
 /**
@@ -36,7 +36,8 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
             PharmacyInfoEntry.COLUMN_NAME_NAME,
             PharmacyInfoEntry.COLUMN_NAME_LATITUDE,
             PharmacyInfoEntry.COLUMN_NAME_LONGITUDE,
-            PharmacyInfoEntry.COLUMN_NAME_ADDRESS
+            PharmacyInfoEntry.COLUMN_NAME_ADDRESS,
+            PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE
         )
 
         val cursor = db.query(
@@ -59,8 +60,9 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
                     getDouble(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_LONGITUDE))
                 val address =
                     getString(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_ADDRESS))
+                val isFavorite = getInt(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE)) == 1
 
-                pharmacies.add(PharmacyDto(name, address, latitude, longitude))
+                pharmacies.add(PharmacyDto(name, address, latitude, longitude, isFavorite))
             }
         }
 
@@ -87,6 +89,7 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
             put(PharmacyInfoEntry.COLUMN_NAME_LATITUDE, pharmacy.latitude)
             put(PharmacyInfoEntry.COLUMN_NAME_LONGITUDE, pharmacy.longitude)
             put(PharmacyInfoEntry.COLUMN_NAME_ADDRESS, pharmacy.address)
+            put(PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE, pharmacy.isFavorite)
         }
 
         db.insert(PharmacyInfoEntry.TABLE_NAME, null, values)
@@ -134,49 +137,17 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
         db.insert(PharmacyVersionEntry.TABLE_NAME, null, values)
 
     }
-    fun getNumberOfPharmaciesInCache() : Int{
-        val db = this.readableDatabase
-        val projection = arrayOf(
-            PharmacyInfoEntry.COLUMN_NAME_NAME,
-            PharmacyInfoEntry.COLUMN_NAME_LATITUDE,
-            PharmacyInfoEntry.COLUMN_NAME_LONGITUDE
-        )
-
-        val cursor = db.query(
-            PharmacyInfoEntry.TABLE_NAME,
-            projection,
-            null,
-            null,
-            null,
-            null,
-            null
-        )
-
-        val pharmacies = mutableListOf<PharmacyDto>()
-        with(cursor) {
-            while (moveToNext()) {
-                val name = getString(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_NAME))
-                val latitude =
-                    getDouble(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_LATITUDE))
-                val longitude =
-                    getDouble(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_LONGITUDE))
-                pharmacies.add(PharmacyDto(name, null, latitude, longitude))
-            }
-        }
-
-        cursor.close()
-
-        return pharmacies.size
-    }
 
     override fun getPharmacyInfo(pharmacyName: String): PharmacyDto? {
         val db = this.readableDatabase
+
 
         val projection = arrayOf(
             PharmacyInfoEntry.COLUMN_NAME_NAME,
             PharmacyInfoEntry.COLUMN_NAME_LATITUDE,
             PharmacyInfoEntry.COLUMN_NAME_LONGITUDE,
-            PharmacyInfoEntry.COLUMN_NAME_ADDRESS
+            PharmacyInfoEntry.COLUMN_NAME_ADDRESS,
+            PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE
         )
 
         val selection = "${PharmacyInfoEntry.COLUMN_NAME_NAME} = ?"
@@ -202,8 +173,9 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
                     getDouble(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_LONGITUDE))
                 val address =
                     getString(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_ADDRESS))
+                val isFavorite = getInt(getColumnIndexOrThrow(PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE)) == 1
 
-                pharmacy = PharmacyDto(name, address, latitude, longitude)
+                pharmacy = PharmacyDto(name, address, latitude, longitude, isFavorite)
             }
         }
 
@@ -257,17 +229,42 @@ class PharmacyInfoDbHelper(context : Context) : SQLiteOpenHelper(context, DATABA
         db.update(PharmacyInfoEntry.TABLE_NAME, values, selection, selectionArgs)
     }
 
+    override fun setPharmacyFavorite(pharmacyName: String, isFavorite: Boolean) {
+        val db = this.writableDatabase
+
+        val values = ContentValues().apply {
+            put(PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE, isFavorite)
+        }
+
+        val selection = "${PharmacyInfoEntry.COLUMN_NAME_NAME} = ?"
+        val selectionArgs = arrayOf(pharmacyName)
+
+        db.update(PharmacyInfoEntry.TABLE_NAME, values, selection, selectionArgs)
+    }
+
+    override fun unfavoriteAllPharmacies() {
+        val db = this.writableDatabase
+
+        val values = ContentValues().apply {
+            put(PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE, 0)
+        }
+
+        db.update(PharmacyInfoEntry.TABLE_NAME, values, null, null)
+    }
+
+
     companion object {
         const val DATABASE_VERSION = 1
         const val DATABASE_NAME = "PharmacyInfo.db"
 
         private const val SQL_CREATE_ENTRIES =
-            "CREATE TABLE pharmacy_info (" +
+            "CREATE TABLE ${PharmacyInfoEntry.TABLE_NAME} (" +
                     "${PharmacyInfoEntry.COLUMN_NAME_NAME} TEXT PRIMARY KEY," +
                     "${PharmacyInfoEntry.COLUMN_NAME_ADDRESS} TEXT," +
                     "${PharmacyInfoEntry.COLUMN_NAME_LATITUDE} REAL," +
                     "${PharmacyInfoEntry.COLUMN_NAME_LONGITUDE} REAL," +
-                    "${PharmacyInfoEntry.COLUMN_NAME_PHOTO_PATH} TEXT)"
+                    "${PharmacyInfoEntry.COLUMN_NAME_PHOTO_PATH} TEXT," +
+                    "${PharmacyInfoEntry.COLUMN_NAME_IS_FAVORITE} INTEGER)"
 
         private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${PharmacyInfoEntry.TABLE_NAME}"
 

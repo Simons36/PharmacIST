@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.`interface`
+package pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.`interface`
 
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
 
@@ -22,5 +22,10 @@ interface PharmacyInfoDbInterface {
     fun getPharmacyPhotoPath(pharmacyName: String) : String?
 
     fun addPharmacyPhoto(pharmacyName: String, photoPath : String)
+
+    fun setPharmacyFavorite(pharmacyName: String, isFavorite: Boolean)
+
+    fun unfavoriteAllPharmacies()
+
 
 }

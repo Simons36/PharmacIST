@@ -9,6 +9,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -29,6 +30,7 @@ import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.AddPharmacyDto
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.exception.PharmacyNameAlreadyInUse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.util.ConfigClass
+import pt.ulisboa.tecnico.cmov.pharmacist.util.UtilFunctions
 import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
@@ -131,7 +133,11 @@ object PharmacyServiceImpl : ParmacyService {
         val apiUrl: String = ConfigClass.getUrl(context)
         val updatePharmaciesStatusUrl = "$apiUrl/pharmacy/sync/version/${knownVersion}"
 
-        val response : HttpResponse = this.httpClient.get(updatePharmaciesStatusUrl)
+        val response : HttpResponse = this.httpClient.get(updatePharmaciesStatusUrl){
+            headers {
+                append("Authorization", "Bearer ${UtilFunctions.getJwtTokenFromSharedPreferences(context)}")
+            }
+        }
         // server will response with two lists: one list for remove (pharmacies to remove)
         // and another list for add (pharmacies to add)
 
@@ -144,6 +150,45 @@ object PharmacyServiceImpl : ParmacyService {
         val deserialized =  Json.decodeFromString(UpdatePharmaciesStatusResponse.serializer(), jsonResponse)
         Log.i("DEBUG", deserialized.toString())
         return deserialized
+
+    }
+
+    override suspend fun addFavoritePharmacy(pharmacyName: String, context: Context) {
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val addFavoritePharmacyUrl = "$apiUrl/user/favorite/add/$pharmacyName"
+
+        val response: HttpResponse = this.httpClient.post(addFavoritePharmacyUrl) {
+            headers {
+                append(
+                    "Authorization",
+                    "Bearer ${UtilFunctions.getJwtTokenFromSharedPreferences(context)}"
+                )
+            }
+
+        }
+
+        if (response.status.value != HttpURLConnection.HTTP_OK) {
+            throw RuntimeException("Error adding pharmacy to favorite: ${response.bodyAsText()}")
+        }
+    }
+
+    override suspend fun removeFavoritePharmacy(pharmacyName: String, context: Context) {
+        val apiUrl: String = ConfigClass.getUrl(context)
+        val removeFavoritePharmacyUrl = "$apiUrl/user/favorite/remove/$pharmacyName"
+
+        val response: HttpResponse = this.httpClient.post(removeFavoritePharmacyUrl) {
+            headers {
+                append(
+                    "Authorization",
+                    "Bearer ${UtilFunctions.getJwtTokenFromSharedPreferences(context)}"
+                )
+            }
+
+        }
+
+        if (response.status.value != HttpURLConnection.HTTP_OK) {
+            throw RuntimeException("Error removing pharmacy from favorite: ${response.bodyAsText()}")
+        }
 
     }
 

@@ -27,8 +27,7 @@ import pt.ulisboa.tecnico.cmov.pharmacist.PharmacyInfoPanelActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.map.LocationService
 import pt.ulisboa.tecnico.cmov.pharmacist.map.MapHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.database.helper.PharmacyInfoDbHelper
-import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.dto.PharmacyDto
+import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.cache.helper.PharmacyInfoDbHelper
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.response.UpdatePharmaciesStatusResponse
 import pt.ulisboa.tecnico.cmov.pharmacist.pharmacy.service.PharmacyServiceImpl
 import pt.ulisboa.tecnico.cmov.pharmacist.util.MapOpeningMode
@@ -307,6 +306,7 @@ class MapFragment : Fragment(), OnMapReadyCallback{
 
             val removeList = updatePharmacyInfoResponse!!.remove
             val addList = updatePharmacyInfoResponse!!.add
+            val favoritePharmacies = updatePharmacyInfoResponse!!.favorite
 
             for(pharmacy in addList){
                 Log.i("DEBUG", "Pharmacy to add: ${pharmacy.name}")
@@ -328,6 +328,12 @@ class MapFragment : Fragment(), OnMapReadyCallback{
                     pharmacy.name
                 )
                 pharmacyCache.addPharmacyInfoToCache(pharmacy)
+            }
+
+            pharmacyCache.unfavoriteAllPharmacies()
+
+            for (pharmacy in favoritePharmacies) {
+                pharmacyCache.setPharmacyFavorite(pharmacy, true)
             }
 
             //Write version to database

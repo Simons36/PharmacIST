@@ -13,6 +13,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import org.json.JSONObject
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.dto.RegisterDto
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.exception.AccountNotFoundException
 import pt.ulisboa.tecnico.cmov.pharmacist.auth.exception.EmailAlreadyExistsException
@@ -51,6 +53,9 @@ object AuthenticationServiceImpl : AuthenticationService {
         UtilFunctions.sendHttpRequest(loginUrl, "POST", argumentsMap, HttpURLConnection.HTTP_OK) { success, responseCode, responseBodyOrExceptionMessage ->
             if (success) {
                 Log.d("Auth", "Login successful: $responseBodyOrExceptionMessage")
+                // Parse JSON string
+                val jsonObject = JSONObject(responseBodyOrExceptionMessage)
+                UtilFunctions.saveJwtTokenToSharedPreferences(jsonObject.getString("access_token"), context)
                 callback(true, null)
             } else {
                 Log.e("Auth", "Error during login with HTTP status code: $responseCode. Error body: $responseBodyOrExceptionMessage")

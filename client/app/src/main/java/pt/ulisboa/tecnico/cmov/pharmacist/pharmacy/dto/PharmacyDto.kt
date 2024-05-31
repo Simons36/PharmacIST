@@ -7,5 +7,6 @@ data class PharmacyDto(
     val name : String,
     val address : String?,
     val latitude : Double,
-    val longitude : Double
+    val longitude : Double,
+    var isFavorite : Boolean? = false
 )
