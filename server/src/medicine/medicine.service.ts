@@ -6,6 +6,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { MedicineDto } from "./dto/medicine.dto";
 import { AddMedicineDto } from "./dto/add-medicine.dto";
 import { PharmacyService } from "src/pharmacy/pharmacy.service";
+import { MedicineQuantityDto } from "./dto/medicine-quantity.dto";
 
 @Injectable()
 export class MedicineService {
@@ -103,6 +104,33 @@ export class MedicineService {
       return medicineDtos;
     } catch (error) {
       this.logger.error("Error searching for medicines: " + error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getPharmacyInventory(pharmacyName: string): Promise<MedicineQuantityDto[]> {
+    try {
+      let medicineQuantities = await this.pharmacyService.getPharmacyInventory(pharmacyName);
+
+      
+      //add purpose to each element of medicineQuantities
+      let medicineDtos : MedicineQuantityDto[] = [];
+      for (let medicineQuantity of medicineQuantities) {
+        let medicine = await this.medicineModel.findOne({ name: medicineQuantity.name }).exec();
+        let medicineDto: MedicineQuantityDto = {
+          name: medicineQuantity.name,
+          quantity: medicineQuantity.quantity,
+          purpose: medicine.purpose,
+        };
+        medicineDtos.push(medicineDto);
+      }
+
+      this.logger.log(`Retrieved pharmacy inventory for ${pharmacyName} successfully.`);
+
+      return medicineDtos;
+    } catch (error) {
+      this.logger.error("Error getting pharmacy inventory: " + error);
+      
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
