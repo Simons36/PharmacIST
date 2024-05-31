@@ -59,4 +59,5 @@ export class PharmacyController {
   async getPharmacyPhoto(@Param('pharmacyName') pharmacyName: string) {
     return await this.pharmacyService.getPharmacyPhoto(pharmacyName);
   }
+
 }

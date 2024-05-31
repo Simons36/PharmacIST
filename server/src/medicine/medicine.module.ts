@@ -5,9 +5,10 @@ import { AppConfigModule } from 'src/config/app-config.module';
 import { DatabaseModule } from 'src/database/database.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Medicine, MedicineSchema } from './schemas/medicine.schema';
+import { PharmacyModule } from 'src/pharmacy/pharmacy.module';
 
 @Module({
-  imports: [AppConfigModule, DatabaseModule, MongooseModule.forFeature([{ name: Medicine.name, schema: MedicineSchema }])],
+  imports: [AppConfigModule, DatabaseModule, MongooseModule.forFeature([{ name: Medicine.name, schema: MedicineSchema }]), PharmacyModule],
   controllers: [MedicineController],
   providers: [MedicineService]
 })
