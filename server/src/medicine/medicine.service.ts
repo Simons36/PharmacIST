@@ -97,12 +97,13 @@ export class MedicineService {
     } catch (error) {
       this.logger.error('Error searching for medicines: ' + error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    } 
   }
 
   private mapToDto(medicine: MedicineDocument): MedicineDto {
     return {
-      name: medicine.name,
+        name: medicine.name,
+        photoPath: medicine.photoPath // Assuming 'photoPath' is a property of your 'Medicine' model
     };
   }
 }

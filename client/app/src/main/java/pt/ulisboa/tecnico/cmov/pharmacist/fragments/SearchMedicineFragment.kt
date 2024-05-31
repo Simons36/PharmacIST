@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
+import pt.ulisboa.tecnico.cmov.pharmacist.MedicineDetailsActivity
 import pt.ulisboa.tecnico.cmov.pharmacist.R
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.adapter.MedicineAdapter
 import pt.ulisboa.tecnico.cmov.pharmacist.medicine.dto.MedicineDTO
@@ -40,7 +42,14 @@ class SearchMedicineFragment : Fragment() {
 
         // Set up RecyclerView
         medicinesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        medicineAdapter = MedicineAdapter(emptyList())
+        // Inside onViewCreated function
+        medicineAdapter = MedicineAdapter(emptyList()) { medicine ->
+            // Handle item click here
+            val intent = Intent(requireContext(), MedicineDetailsActivity::class.java)
+            // Pass relevant information about the clicked medicine to the details activity
+            intent.putExtra("medicine_name", medicine.getName())
+            startActivity(intent)
+        }
         medicinesRecyclerView.adapter = medicineAdapter
 
         // Initialize the medicine service
@@ -66,6 +75,9 @@ class SearchMedicineFragment : Fragment() {
                 return false
             }
         })
+
+
+
     }
 
     private fun fetchMedicines(query: String, context: Context) {

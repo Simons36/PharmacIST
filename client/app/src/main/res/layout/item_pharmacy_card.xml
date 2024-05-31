@@ -38,7 +38,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:gravity="start"
-                    android:text="Closest Pharmacy: "
+                    android:text="Address: "
                     android:textColor="@color/colorPrimary"
                     android:textSize="12sp" />
 
@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:layout_weight="1"
-                    android:text="Pharmacy Name"
+                    android:text="Address"
                     android:textColor="@android:color/black"
                     android:textSize="12sp" />
 
@@ -65,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:gravity="start"
-                    android:text="Address: "
+                    android:text="Distance: "
                     android:textColor="@color/colorPrimary"
                     android:textSize="12sp" />
 
@@ -79,23 +79,6 @@
                     android:textColor="@android:color/black"
                     android:textSize="12sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="start"
-                    android:text="Distance: "
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/pharmacyDistanceView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_weight="1"
-                    android:textColor="@android:color/black"
-                    android:textSize="12sp"/>
 
             </LinearLayout>
 
@@ -103,11 +86,11 @@
 
         <ImageView
             android:id="@+id/infoIconImageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/medicine_info_arrow" />
+            android:src="@drawable/ic_favourite" />
 
     </LinearLayout>
 
